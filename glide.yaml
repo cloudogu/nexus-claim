@@ -1,2 +1,7 @@
 package: github.com/cloudogu/nexus-claim
-import: []
+import:
+- package: github.com/hashicorp/hcl
+- package: github.com/pkg/errors
+  version: ^0.8.0
+- package: github.com/stretchr/testify
+  version: ^1.1.4
