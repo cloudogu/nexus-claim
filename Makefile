@@ -86,7 +86,7 @@ endif
 update-dependencies: glide.lock
 
 glide.lock: glide.yaml
-	${GLIDE} ${GLIDEFLAGS} up -v
+	${GLIDE} ${GLIDEFLAGS} up
 
 
 # build steps: dependencies, compile, package
@@ -107,12 +107,12 @@ info:
 
 dependencies: info
 	@echo "installing dependencies ..."
-	${GLIDE} ${GLIDEFLAGS} install -v
+	${GLIDE} ${GLIDEFLAGS} install
 
 ${EXECUTABLE}: dependencies
 	@echo "compiling ..."
 	mkdir -p $(TARGET_DIR)
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -a -tags netgo ${LDFLAGS} -installsuffix cgo -o $@
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -installsuffix cgo -o $@
 	@echo "... executable can be found at $@"
 
 ${PACKAGE}: ${EXECUTABLE}
