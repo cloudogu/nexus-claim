@@ -1,0 +1,6 @@
+version: "2"
+services:
+  nexus:
+    image: sonatype/nexus:2.14.3
+    ports:
+    - "8081:8081"
