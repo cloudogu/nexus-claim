@@ -112,7 +112,7 @@ dependencies: info
 ${EXECUTABLE}: dependencies
 	@echo "compiling ..."
 	mkdir -p $(TARGET_DIR)
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -installsuffix cgo -o $@
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -o $@
 	@echo "... executable can be found at $@"
 
 ${PACKAGE}: ${EXECUTABLE}
