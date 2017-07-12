@@ -69,7 +69,7 @@ func TestGet(t *testing.T) {
 	require.Equal(t, 1, len(model.Repositories))
 
 	repository := model.Repositories[0]
-	assert.Equal(t, "simple", repository.ID)
+	assert.Equal(t, domain.RepositoryID("simple"), repository.ID)
 	assert.Equal(t, "Simple Repository", repository.Properties["Name"])
 	assert.Equal(t, domain.StatePresent, repository.State)
 }

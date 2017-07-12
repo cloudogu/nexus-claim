@@ -99,7 +99,7 @@ func (dao *fileModelDAO) parseRepositoryNode(repositoryNode *ast.ObjectItem) (do
 	return repository, nil
 }
 
-func (dao *fileModelDAO) parseID(repositoryNode *ast.ObjectItem) (string, error) {
+func (dao *fileModelDAO) parseID(repositoryNode *ast.ObjectItem) (domain.RepositoryID, error) {
 	keyCount := len(repositoryNode.Keys)
 	if keyCount < 0 || keyCount > 1 {
 		return "", errors.New("found repository with more or less than one id")
@@ -112,10 +112,10 @@ func (dao *fileModelDAO) parseID(repositoryNode *ast.ObjectItem) (string, error)
 		return "", errors.New("repository with empty id found")
 	}
 
-	return id, nil
+	return domain.RepositoryID(id), nil
 }
 
-func (dao *fileModelDAO) parseProperties(id string, repositoryNode *ast.ObjectItem) (domain.Properties, error) {
+func (dao *fileModelDAO) parseProperties(id domain.RepositoryID, repositoryNode *ast.ObjectItem) (domain.Properties, error) {
 	properties := make(domain.Properties)
 
 	err := hcl.DecodeObject(&properties, repositoryNode.Val)
@@ -126,7 +126,7 @@ func (dao *fileModelDAO) parseProperties(id string, repositoryNode *ast.ObjectIt
 	return properties, nil
 }
 
-func (dao *fileModelDAO) parseState(repositoryID string, properties domain.Properties) (domain.State, error) {
+func (dao *fileModelDAO) parseState(repositoryID domain.RepositoryID, properties domain.Properties) (domain.State, error) {
 	state := domain.StatePresent
 	if stateValue, ok := properties["_state"]; ok {
 
