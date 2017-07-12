@@ -11,3 +11,14 @@ type Repository struct {
 	ID         RepositoryID
 	Properties Properties
 }
+
+// IsEqual returns true if all properties are equal to the other repository.
+// Note the function can only compare primitives, it is not able to compare complex types such as slices.
+func (repository Repository) IsEqual(other Repository) bool {
+	for key, value := range repository.Properties {
+		if value != other.Properties[key] {
+			return false
+		}
+	}
+	return true
+}
