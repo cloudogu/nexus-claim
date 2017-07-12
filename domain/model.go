@@ -13,13 +13,13 @@ const (
 
 // ModelRepository represents the repository from a hcl file
 type ModelRepository struct {
-	Repository `hcl:",squash"`
-	State      State `hcl:"_state"`
+	Repository
+	State
 }
 
 // Model is the structure which can be read from a hcl file
 type Model struct {
-	Repositories []*ModelRepository `hcl:"repository"`
+	Repositories []ModelRepository
 }
 
 // ModelDAO contains methods to read and parse hcl files
