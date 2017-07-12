@@ -1,11 +1,3 @@
-# Nexus Claim
-
-Define your [Sonatype Nexus](http://www.sonatype.org/nexus/) repository structure as code.
- 
-
-## Example
-
-```hcl
 repository "apache-snapshots" {
   _state = "absent"
 }
@@ -43,6 +35,3 @@ repository "scm-releases" {
   writePolicy = "READ_ONLY"
   _state = "present"
 }
-
-
-```
