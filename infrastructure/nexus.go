@@ -11,12 +11,15 @@ import (
 
 	"io"
 
+	"bytes"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/pkg/errors"
 )
 
 const (
-	repositoryServiceURL = "/service/local/repositories/"
+	repositoryServiceURL = "/service/local/repositories"
+	contentType          = "application/json; charset=UTF-8"
 )
 
 // NewHTTPNexusAPIClient creates a new http based NexusAPIClient
@@ -33,7 +36,7 @@ type httpNexusAPIClient struct {
 
 func (client *httpNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repository, error) {
 	repositoryURL := client.createRepositoryURL(id)
-	request, err := client.createGetRequest(repositoryURL)
+	request, err := client.createReadRequest(repositoryURL)
 	if err != nil {
 		return nil, err
 	}
@@ -56,16 +59,23 @@ func (client *httpNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repositor
 }
 
 func (client *httpNexusAPIClient) createRepositoryURL(id domain.RepositoryID) string {
-	return client.url + repositoryServiceURL + string(id)
+	return client.createRepositoryServiceURL() + "/" + string(id)
 }
 
-func (client *httpNexusAPIClient) createGetRequest(url string) (*http.Request, error) {
-	request, err := http.NewRequest("GET", url, nil)
+func (client *httpNexusAPIClient) createReadRequest(url string) (*http.Request, error) {
+	request, err := client.createRequest("GET", url, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create get request for %s", url)
+		return nil, err
 	}
+	request.Header.Set("Accept", contentType)
+	return request, nil
+}
 
-	request.Header.Set("Accept", "application/json; charset=UTF-8")
+func (client *httpNexusAPIClient) createRequest(method string, url string, body io.Reader) (*http.Request, error) {
+	request, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create %s request for %s", method, url)
+	}
 
 	if client.username != "" {
 		request.SetBasicAuth(client.username, client.password)
@@ -95,31 +105,90 @@ func (client *httpNexusAPIClient) parseRepositoryResponse(response *http.Respons
 		return nil, errors.Wrap(err, "failed to parse response body")
 	}
 
-	nexusAPIResponse := nexusAPIResponse{}
-	err = json.Unmarshal(content, &nexusAPIResponse)
+	dto := newRepositoryDTO()
+	err = json.Unmarshal(content, dto)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal response body")
 	}
 
-	properties := nexusAPIResponse.Data
-	return &domain.Repository{
-		ID:         domain.RepositoryID(properties["id"].(string)),
-		Properties: properties,
-	}, nil
+	return dto.to(), nil
 }
 
-type nexusAPIResponse struct {
-	Data domain.Properties
+func newRepositoryDTO() *repositoryDTO {
+	return &repositoryDTO{}
+}
+
+type repositoryDTO struct {
+	Data domain.Properties `json:"data"`
+}
+
+func (dto *repositoryDTO) from(repository domain.Repository) *repositoryDTO {
+	properties := repository.Properties
+	if properties == nil {
+		properties = make(domain.Properties)
+	}
+	dto.Data = properties
+	dto.Data["id"] = repository.ID
+	return dto
+}
+
+func (dto *repositoryDTO) to() *domain.Repository {
+	return &domain.Repository{
+		ID:         domain.RepositoryID(dto.Data["id"].(string)),
+		Properties: dto.Data,
+	}
 }
 
 func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
+	dto := newRepositoryDTO().from(repository)
+	request, err := client.createWriteRequest("POST", client.createRepositoryServiceURL(), dto)
+	if err != nil {
+		return errors.Wrap(err, "failed to create post request")
+	}
+
+	response, err := client.httpClient.Do(request)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create repository %s", repository.ID)
+	}
+
+	if response.StatusCode != 201 {
+		return errors.Errorf("invalid status code %d", response.StatusCode)
+	}
+
 	return nil
+}
+
+func (client *httpNexusAPIClient) createRepositoryServiceURL() string {
+	return client.url + repositoryServiceURL
+}
+
+func (client *httpNexusAPIClient) createWriteRequest(method, url string, body interface{}) (*http.Request, error) {
+	reader, err := client.createJSONBody(body)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := client.createRequest(method, url, reader)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", contentType)
+	return request, nil
+}
+
+func (client *httpNexusAPIClient) createJSONBody(object interface{}) (io.Reader, error) {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to marshal object")
+	}
+
+	return bytes.NewBuffer(data), nil
 }
 
 func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
-	return nil
+	return errors.New("not yet implemented")
 }
 
 func (client *httpNexusAPIClient) Remove(id domain.RepositoryID) error {
-	return nil
+	return errors.New("not yet implemented")
 }

@@ -7,6 +7,8 @@ import (
 
 	"io/ioutil"
 
+	"encoding/json"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -81,6 +83,82 @@ func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
 	client.Get(domain.RepositoryID("some-repo"))
+}
+
+func TestHttpNexusAPIClient_Create(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/service/local/repositories", r.URL.Path)
+		assert.Equal(t, "POST", r.Method)
+
+		defer r.Body.Close()
+
+		bytes, err := ioutil.ReadAll(r.Body)
+		require.Nil(t, err)
+
+		jsonBody := make(map[string]interface{})
+		err = json.Unmarshal(bytes, &jsonBody)
+		require.Nil(t, err)
+
+		data, ok := jsonBody["data"].(map[string]interface{})
+		require.True(t, ok)
+
+		assert.Equal(t, "test-repo", data["id"])
+		assert.Equal(t, "Test Repository", data["name"])
+
+		w.WriteHeader(201)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+
+	properties := make(domain.Properties)
+	properties["name"] = "Test Repository"
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("test-repo"),
+		Properties: properties,
+	}
+	err := client.Create(repository)
+	require.Nil(t, err)
+}
+
+func TestHttpNexusAPIClient_CreateWithWrongStatusCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(502)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Create(domain.Repository{ID: domain.RepositoryID("test")})
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid status code 502")
+}
+
+func TestHttpNexusAPIClient_CreateContentType(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "application/json; charset=UTF-8", r.Header.Get("Content-Type"))
+		w.WriteHeader(201)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Create(domain.Repository{ID: domain.RepositoryID("test")})
+	require.Nil(t, err)
+}
+
+func TestHttpNexusAPIClient_CreateAuthentication(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		assert.Equal(t, "admin", username)
+		assert.Equal(t, "admin123", password)
+		assert.True(t, ok)
+
+		w.WriteHeader(201)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Create(domain.Repository{ID: domain.RepositoryID("test")})
+	require.Nil(t, err)
 }
 
 func servce(t *testing.T, url string, filename string) *httptest.Server {
