@@ -82,7 +82,7 @@ func (plan *Plan) UnmarshalJSON(bytes []byte) error {
 
 // CreatePlan compares the model with the nexus and creates a plan, which describes action to get nexus in sync
 // with the described model.
-func CreatePlan(modelDAO ModelDAO, client NexusAPIClient) (*Plan, error) {
+func CreatePlan(modelDAO ModelDAO, reader NexusAPIReader) (*Plan, error) {
 	model, err := modelDAO.Get()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read model")
@@ -91,7 +91,7 @@ func CreatePlan(modelDAO ModelDAO, client NexusAPIClient) (*Plan, error) {
 	plan := &Plan{}
 	creator := &planCreator{
 		model:  model,
-		client: client,
+		reader: reader,
 		plan:   plan,
 	}
 
@@ -105,7 +105,7 @@ func CreatePlan(modelDAO ModelDAO, client NexusAPIClient) (*Plan, error) {
 
 type planCreator struct {
 	model  Model
-	client NexusAPIClient
+	reader NexusAPIReader
 	plan   *Plan
 }
 
@@ -120,7 +120,7 @@ func (creator *planCreator) createPlan() error {
 }
 
 func (creator *planCreator) createActionFor(repository ModelRepository) error {
-	clientRepository, err := creator.client.Get(repository.ID)
+	clientRepository, err := creator.reader.Get(repository.ID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read repository %s from client api", repository.ID)
 	}

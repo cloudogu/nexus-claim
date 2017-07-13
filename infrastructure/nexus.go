@@ -111,3 +111,15 @@ func (client *httpNexusAPIClient) parseRepositoryResponse(response *http.Respons
 type nexusAPIResponse struct {
 	Data domain.Properties
 }
+
+func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
+	return nil
+}
+
+func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
+	return nil
+}
+
+func (client *httpNexusAPIClient) Remove(id domain.RepositoryID) error {
+	return nil
+}
