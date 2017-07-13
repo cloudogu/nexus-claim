@@ -209,6 +209,31 @@ func TestHttpNexusAPIClient_Modify(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestHttpNexusAPIClient_RemoveWithInvalidStatusCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Remove(domain.RepositoryID("test-repo"))
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid status code 404")
+}
+
+func TestHttpNexusAPIClient_Remove(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/service/local/repositories/test-repo", r.URL.Path)
+		assert.Equal(t, "DELETE", r.Method)
+		w.WriteHeader(204)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Remove(domain.RepositoryID("test-repo"))
+	require.Nil(t, err)
+}
+
 func servce(t *testing.T, url string, filename string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == url {

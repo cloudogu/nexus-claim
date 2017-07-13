@@ -209,5 +209,19 @@ func (client *httpNexusAPIClient) statusCodeError(statusCode int) error {
 }
 
 func (client *httpNexusAPIClient) Remove(id domain.RepositoryID) error {
-	return errors.New("not yet implemented")
+	request, err := client.createRequest("DELETE", client.createRepositoryURL(id), nil)
+	if err != nil {
+		return err
+	}
+
+	response, err := client.httpClient.Do(request)
+	if err != nil {
+		return errors.Wrapf(err, "failed to remove repository %s", id)
+	}
+
+	if response.StatusCode != 204 {
+		return client.statusCodeError(response.StatusCode)
+	}
+
+	return nil
 }
