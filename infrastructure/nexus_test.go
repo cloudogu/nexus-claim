@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetNexus(t *testing.T) {
+func TestHttpNexusAPIClient_Get(t *testing.T) {
 	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
 	defer server.Close()
 
@@ -24,7 +24,7 @@ func TestGetNexus(t *testing.T) {
 	assert.Equal(t, "Simple test repository", repository.Properties["name"])
 }
 
-func TestGetNexusNotFound(t *testing.T) {
+func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
 	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
 	defer server.Close()
 
@@ -34,7 +34,7 @@ func TestGetNexusNotFound(t *testing.T) {
 	require.Nil(t, repository)
 }
 
-func TestGetNexusInvalidStatusCode(t *testing.T) {
+func TestHttpNexusAPIClient_GetInvalidStatusCode(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(503)
 	}))
@@ -47,7 +47,7 @@ func TestGetNexusInvalidStatusCode(t *testing.T) {
 	require.Contains(t, err.Error(), "invalid status code 503")
 }
 
-func TestGetNexusInvalidBody(t *testing.T) {
+func TestHttpNexusAPIClient_GetInvalidBody(t *testing.T) {
 	server := servce(t, "/service/local/repositories/invalid-body", "invalid-body.json")
 	defer server.Close()
 
@@ -58,7 +58,7 @@ func TestGetNexusInvalidBody(t *testing.T) {
 	require.Contains(t, err.Error(), "failed to unmarshal response body")
 }
 
-func TestGetNexusAcceptHeader(t *testing.T) {
+func TestHttpNexusAPIClient_GetAcceptHeader(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "application/json; charset=UTF-8", r.Header.Get("Accept"))
 		w.WriteHeader(404)
@@ -69,7 +69,7 @@ func TestGetNexusAcceptHeader(t *testing.T) {
 	client.Get(domain.RepositoryID("accept"))
 }
 
-func TestGetNexusAuthentication(t *testing.T) {
+func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		assert.Equal(t, "admin", username)
