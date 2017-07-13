@@ -10,10 +10,10 @@ import (
 
 var (
 	// Version of the application
-	Version string = "0.0.0"
+	Version = "0.0.0"
 
 	// CommitID git sha1 hash
-	CommitID string = ""
+	CommitID string
 )
 
 func main() {
@@ -32,15 +32,15 @@ func main() {
 	}
 }
 
-func createVersion(version string, commitId string) string {
+func createVersion(version string, commitID string) string {
 	v := version
-	length := len(commitId)
+	length := len(commitID)
 	if length > 0 {
 		limit := 8
 		if length < 8 {
 			limit = length
 		}
-		v += "-" + commitId[:limit]
+		v += "-" + commitID[:limit]
 	}
 	return v
 }
