@@ -52,7 +52,7 @@ func (client *httpNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repositor
 	}
 
 	if !client.isStatusOK(response) {
-		return nil, errors.Errorf("invalid status code %d returned", response.StatusCode)
+		return nil, client.statusCodeError(response.StatusCode)
 	}
 
 	return client.parseRepositoryResponse(response)
@@ -152,7 +152,7 @@ func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 	}
 
 	if response.StatusCode != 201 {
-		return errors.Errorf("invalid status code %d", response.StatusCode)
+		return client.statusCodeError(response.StatusCode)
 	}
 
 	return nil
@@ -186,7 +186,26 @@ func (client *httpNexusAPIClient) createJSONBody(object interface{}) (io.Reader,
 }
 
 func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
-	return errors.New("not yet implemented")
+	dto := newRepositoryDTO().from(repository)
+	request, err := client.createWriteRequest("PUT", client.createRepositoryURL(repository.ID), dto)
+	if err != nil {
+		return err
+	}
+
+	response, err := client.httpClient.Do(request)
+	if err != nil {
+		return errors.Wrapf(err, "failed to modify repository %s", repository.ID)
+	}
+
+	if response.StatusCode != 200 {
+		return client.statusCodeError(response.StatusCode)
+	}
+
+	return nil
+}
+
+func (client *httpNexusAPIClient) statusCodeError(statusCode int) error {
+	return errors.Errorf("invalid status code %d", statusCode)
 }
 
 func (client *httpNexusAPIClient) Remove(id domain.RepositoryID) error {

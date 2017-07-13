@@ -161,6 +161,54 @@ func TestHttpNexusAPIClient_CreateAuthentication(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestHttpNexusAPIClient_ModifyWithWrongStatusCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Modify(domain.Repository{ID: domain.RepositoryID("test")})
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "invalid status code 400")
+}
+
+func TestHttpNexusAPIClient_Modify(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/service/local/repositories/test-repo", r.URL.Path)
+		assert.Equal(t, "PUT", r.Method)
+
+		defer r.Body.Close()
+
+		bytes, err := ioutil.ReadAll(r.Body)
+		require.Nil(t, err)
+
+		jsonBody := make(map[string]interface{})
+		err = json.Unmarshal(bytes, &jsonBody)
+		require.Nil(t, err)
+
+		data, ok := jsonBody["data"].(map[string]interface{})
+		require.True(t, ok)
+
+		assert.Equal(t, "test-repo", data["id"])
+		assert.Equal(t, "Test Repository", data["name"])
+
+		w.WriteHeader(200)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+
+	properties := make(domain.Properties)
+	properties["name"] = "Test Repository"
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("test-repo"),
+		Properties: properties,
+	}
+	err := client.Modify(repository)
+	require.Nil(t, err)
+}
+
 func servce(t *testing.T, url string, filename string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == url {
