@@ -143,7 +143,7 @@ func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 	dto := newRepositoryDTO().from(repository)
 	request, err := client.createWriteRequest("POST", client.createRepositoryServiceURL(), dto)
 	if err != nil {
-		return errors.Wrap(err, "failed to create post request")
+		return err
 	}
 
 	response, err := client.httpClient.Do(request)
