@@ -1,6 +1,10 @@
 package domain
 
-import "github.com/pkg/errors"
+import (
+	"encoding/json"
+
+	"github.com/pkg/errors"
+)
 
 // ActionType describes the type of the action create, modify or remove
 type ActionType uint8
@@ -32,21 +36,48 @@ func (plan *Plan) GetActions() []Action {
 
 // Create adds a create action to the plan
 func (plan *Plan) Create(repository Repository) {
-	plan.actions = append(plan.actions, plan.action(ActionCreate, repository))
+	plan.action(ActionCreate, repository)
 }
 
 // Modify adds a modify action to the plan
 func (plan *Plan) Modify(repository Repository) {
-	plan.actions = append(plan.actions, plan.action(ActionModify, repository))
+	plan.action(ActionModify, repository)
 }
 
 // Remove adds a remove action to the plan
 func (plan *Plan) Remove(repository Repository) {
-	plan.actions = append(plan.actions, plan.action(ActionRemove, repository))
+	plan.action(ActionRemove, repository)
 }
 
-func (plan *Plan) action(actionType ActionType, repository Repository) Action {
-	return Action{Type: actionType, Repository: repository}
+func (plan *Plan) action(actionType ActionType, repository Repository) {
+	action := Action{Type: actionType, Repository: repository}
+	if plan.actions == nil {
+		plan.actions = []Action{}
+	}
+	plan.actions = append(plan.actions, action)
+}
+
+// MarshalJSON is used to marshal the private actions, which could not be written using reflection.
+func (plan *Plan) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Actions []Action
+	}{
+		Actions: plan.actions,
+	})
+}
+
+// UnmarshalJSON is used to unmarshal the private actions from a marshaled plan
+func (plan *Plan) UnmarshalJSON(bytes []byte) error {
+	unmarshaledJSON := struct {
+		Actions []Action
+	}{}
+	err := json.Unmarshal(bytes, &unmarshaledJSON)
+	if err != nil {
+		return err
+	}
+
+	plan.actions = unmarshaledJSON.Actions
+	return nil
 }
 
 // CreatePlan compares the model with the nexus and creates a plan, which describes action to get nexus in sync
@@ -57,7 +88,7 @@ func CreatePlan(modelDAO ModelDAO, client NexusAPIClient) (*Plan, error) {
 		return nil, errors.Wrap(err, "failed to read model")
 	}
 
-	plan := newPlan()
+	plan := &Plan{}
 	creator := &planCreator{
 		model:  model,
 		client: client,
@@ -70,12 +101,6 @@ func CreatePlan(modelDAO ModelDAO, client NexusAPIClient) (*Plan, error) {
 	}
 
 	return plan, err
-}
-
-func newPlan() *Plan {
-	plan := Plan{}
-	plan.actions = []Action{}
-	return &plan
 }
 
 type planCreator struct {

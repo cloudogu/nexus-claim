@@ -1,45 +1,24 @@
 package main
 
 import (
-	"fmt"
+	cli "gopkg.in/urfave/cli.v2"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/cloudogu/nexus-claim/infrastructure"
+	"os"
+
+	"github.com/cloudogu/nexus-claim/cmd"
 )
 
 func main() {
-	dao := createFileModelDAO()
-	client := createNexusAPIClient()
+	cmdApp := cmd.GetApplication()
 
-	plan, err := domain.CreatePlan(dao, client)
+	app := cli.NewApp()
+	app.Name = "nexus-claim"
+	app.Usage = "Define your Sonatype Nexus repository structure as code"
+	app.Flags = cmdApp.GlobalFlags()
+	app.Commands = cmdApp.Commands()
+
+	err := app.Run(os.Args)
 	if err != nil {
 		panic(err)
 	}
-
-	for _, action := range plan.GetActions() {
-		fmt.Print(createOperatorFromActionType(action.Type))
-		fmt.Print(" ")
-		fmt.Println(action.Repository.ID)
-	}
-}
-
-func createOperatorFromActionType(actionType domain.ActionType) string {
-	switch actionType {
-	case domain.ActionCreate:
-		return "+"
-	case domain.ActionModify:
-		return "~"
-	case domain.ActionRemove:
-		return "-"
-	default:
-		return "#"
-	}
-}
-
-func createNexusAPIClient() domain.NexusAPIClient {
-	return infrastructure.NewHTTPNexusAPIClient("http://localhost:8081/nexus", "admin", "admin123")
-}
-
-func createFileModelDAO() domain.ModelDAO {
-	return infrastructure.NewFileModelDAO("resources/nexus-initial-example.hcl")
 }

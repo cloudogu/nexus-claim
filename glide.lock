@@ -1,5 +1,5 @@
-hash: 5bca0a378ac3b94c8969ed6c8ee6a570b1604f1113dc52467d00bfd6be6cac27
-updated: 2017-07-10T14:21:07.072927141+02:00
+hash: 9e200cfe2e1098b275b67b2dd789ad318829bbff24b4eac4fdd732183775a970
+updated: 2017-07-13T09:44:47.452058341+02:00
 imports:
 - name: github.com/hashicorp/hcl
   version: 392dba7d905ed5d04a5794ba89f558b27e2ba1ca
@@ -7,4 +7,6 @@ imports:
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+- name: gopkg.in/urfave/cli.v2
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 testImports: []

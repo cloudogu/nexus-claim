@@ -205,6 +205,20 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	assert.Equal(t, "maven2", action.Repository.Properties["type"])
 }
 
+func TestPlan_MarshalAndUnmarshalJSON(t *testing.T) {
+	plan := &domain.Plan{}
+	plan.Create(domain.Repository{ID: domain.RepositoryID("test-123")})
+
+	bytes, err := plan.MarshalJSON()
+	require.Nil(t, err)
+
+	nplan := &domain.Plan{}
+	err = nplan.UnmarshalJSON(bytes)
+	require.Nil(t, err)
+
+	assert.Equal(t, plan, nplan)
+}
+
 func createTestModel() domain.Model {
 	return domain.Model{
 		Repositories: []domain.ModelRepository{

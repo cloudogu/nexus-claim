@@ -11,4 +11,5 @@ repository "releases" {
   WritePolicy = "ALLOW_WRITE_ONCE"
   ProviderRole = "org.sonatype.nexus.proxy.repository.Repository"
   NotFoundCacheTTL = 1440
+  _state = "present"
 }
