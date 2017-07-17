@@ -22,3 +22,15 @@ func (repository Repository) IsEqual(other Repository) bool {
 	}
 	return true
 }
+
+// Merge copies all properties from the other repository, merges them with this repository and returns a new repository.
+func (repository Repository) Merge(other Repository) Repository {
+	properties := make(Properties)
+	for key, value := range repository.Properties {
+		properties[key] = value
+	}
+	for key, value := range other.Properties {
+		properties[key] = value
+	}
+	return Repository{ID: repository.ID, Properties: properties}
+}

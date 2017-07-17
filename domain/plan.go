@@ -138,7 +138,8 @@ func (creator *planCreator) createActionFor(repository ModelRepository) error {
 func (creator *planCreator) handleStatePresent(repository Repository, clientRepository *Repository) {
 	if clientRepository != nil {
 		if !repository.IsEqual(*clientRepository) {
-			creator.plan.Modify(repository)
+			mergedRepository := clientRepository.Merge(repository)
+			creator.plan.Modify(mergedRepository)
 		}
 	} else {
 		creator.plan.Create(repository)

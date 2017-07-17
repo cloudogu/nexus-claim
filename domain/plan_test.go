@@ -162,6 +162,7 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	modelProperties := make(domain.Properties)
 	modelProperties["name"] = "super simple"
 	modelProperties["type"] = "maven2"
+	modelProperties["mp"] = "model"
 
 	modelRepository := domain.Repository{
 		ID:         id,
@@ -183,6 +184,7 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	clientProperties := make(domain.Properties)
 	clientProperties["name"] = "simple"
 	clientProperties["type"] = "maven2"
+	clientProperties["cp"] = "client"
 
 	clientRepository := domain.Repository{
 		ID:         id,
@@ -203,6 +205,8 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	assert.Equal(t, id, action.Repository.ID)
 	assert.Equal(t, "super simple", action.Repository.Properties["name"])
 	assert.Equal(t, "maven2", action.Repository.Properties["type"])
+	assert.Equal(t, "model", action.Repository.Properties["mp"])
+	assert.Equal(t, "client", action.Repository.Properties["cp"])
 }
 
 func TestPlan_MarshalAndUnmarshalJSON(t *testing.T) {
