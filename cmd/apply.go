@@ -37,7 +37,8 @@ func (app *Application) apply(c *cli.Context) error {
 		return err
 	}
 
-	err = domain.ApplyPlan(app.nexusAPIClient, plan)
+	nexusAPIClient := app.createNexusAPIClient(c)
+	err = domain.ApplyPlan(nexusAPIClient, plan)
 	if err != nil {
 		return errors.Wrapf(err, "failed to execute plan")
 	}
