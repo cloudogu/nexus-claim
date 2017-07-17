@@ -14,7 +14,7 @@ repository "thirdparty" {
 repository "scm-releases" {
   name = "SCM-Manager Releases"
   format = "maven2"
-  provider = "maven"
+  provider = "maven2"
   artifactMaxAge = -1
   autoBlockActive =  true
   browseable =  true
