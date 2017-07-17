@@ -96,6 +96,10 @@ func (dao *fileModelDAO) parseRepositoryNode(repositoryNode *ast.ObjectItem) (do
 	}
 	repository.State = state
 
+	// remove _state from repository property.
+	// The state property can cause problems on create or modify, because nexus tries to interpret it.
+	delete(repository.Properties, "_state")
+
 	return repository, nil
 }
 

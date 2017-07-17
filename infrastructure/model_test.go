@@ -64,6 +64,12 @@ func TestGetWithEmptyID(t *testing.T) {
 	require.Contains(t, err.Error(), "repository with empty id found")
 }
 
+func TestGetStateGetsRemovedFromProperties(t *testing.T) {
+	repositories := get(t, "state.hcl").Repositories
+	assert.Nil(t, repositories[0].Properties["_state"])
+	assert.Nil(t, repositories[1].Properties["_state"])
+}
+
 func TestGet(t *testing.T) {
 	model := get(t, "simple.hcl")
 	require.Equal(t, 1, len(model.Repositories))
