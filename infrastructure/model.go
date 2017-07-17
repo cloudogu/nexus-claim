@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"reflect"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/hashicorp/hcl"
 	"github.com/hashicorp/hcl/hcl/ast"
@@ -96,13 +98,10 @@ func (dao *fileModelDAO) parseRepositoryNode(repositoryNode *ast.ObjectItem) (do
 	}
 	repository.State = state
 
-	// remove _state from repository property.
-	// The state property can cause problems on create or modify, because nexus tries to interpret it.
-	delete(repository.Properties, "_state")
+	dao.normalizeProperties(repository.Properties)
 
 	return repository, nil
 }
-
 func (dao *fileModelDAO) parseID(repositoryNode *ast.ObjectItem) (domain.RepositoryID, error) {
 	keyCount := len(repositoryNode.Keys)
 	if keyCount < 0 || keyCount > 1 {
@@ -153,4 +152,32 @@ func (dao *fileModelDAO) parseState(repositoryID domain.RepositoryID, properties
 	}
 
 	return state, nil
+}
+
+func (dao *fileModelDAO) normalizeProperties(properties domain.Properties) {
+	// remove _state from repository property.
+	// The state property can cause problems on create or modify, because nexus tries to interpret it.
+	delete(properties, "_state")
+	dao.unwrapNestedProperties(properties)
+}
+
+func (dao *fileModelDAO) unwrapNestedProperties(properties domain.Properties) {
+	for key, value := range properties {
+		if dao.isNestedProperty(value) {
+			properties[key] = dao.unwrapNestedProperty(value)
+		}
+	}
+}
+
+func (dao *fileModelDAO) isNestedProperty(value interface{}) bool {
+	v := reflect.ValueOf(value)
+	if v.Kind() == reflect.Slice && v.Len() == 1 {
+		elem := v.Type().Elem()
+		return elem.Kind() == reflect.Map
+	}
+	return false
+}
+
+func (dao *fileModelDAO) unwrapNestedProperty(value interface{}) interface{} {
+	return value.([]map[string]interface{})[0]
 }

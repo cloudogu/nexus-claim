@@ -70,6 +70,13 @@ func TestGetStateGetsRemovedFromProperties(t *testing.T) {
 	assert.Nil(t, repositories[1].Properties["_state"])
 }
 
+func TestGetWithNestedProperties(t *testing.T) {
+	repository := get(t, "nested-property.hcl").Repositories[0]
+	storage, ok := repository.Properties["remoteStorage"].(map[string]interface{})
+	require.True(t, ok)
+	assert.Equal(t, "https://maven.scm-manager.org/releases/", storage["remoteStorageUrl"])
+}
+
 func TestGet(t *testing.T) {
 	model := get(t, "simple.hcl")
 	require.Equal(t, 1, len(model.Repositories))
