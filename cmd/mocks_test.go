@@ -4,6 +4,9 @@ import "github.com/cloudogu/nexus-claim/domain"
 
 type mockNexusAPIClient struct {
 	repositories map[domain.RepositoryID]*domain.Repository
+	Created      []domain.Repository
+	Modified     []domain.Repository
+	Removed      []domain.RepositoryID
 }
 
 func (mock *mockNexusAPIClient) add(repo domain.Repository) {
@@ -34,13 +37,25 @@ func (mock *mockNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repository,
 }
 
 func (client *mockNexusAPIClient) Create(repository domain.Repository) error {
+	if client.Created == nil {
+		client.Created = make([]domain.Repository, 0)
+	}
+	client.Created = append(client.Created, repository)
 	return nil
 }
 
 func (client *mockNexusAPIClient) Modify(repository domain.Repository) error {
+	if client.Modified == nil {
+		client.Modified = make([]domain.Repository, 0)
+	}
+	client.Modified = append(client.Modified, repository)
 	return nil
 }
 
 func (client *mockNexusAPIClient) Remove(id domain.RepositoryID) error {
+	if client.Removed == nil {
+		client.Removed = make([]domain.RepositoryID, 0)
+	}
+	client.Removed = append(client.Removed, id)
 	return nil
 }
