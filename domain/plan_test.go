@@ -207,6 +207,7 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	assert.Equal(t, "maven2", action.Repository.Properties["type"])
 	assert.Equal(t, "model", action.Repository.Properties["mp"])
 	assert.Equal(t, "client", action.Repository.Properties["cp"])
+	assert.Equal(t, 4, len(action.Repository.Properties))
 }
 
 func TestPlan_MarshalAndUnmarshalJSON(t *testing.T) {
