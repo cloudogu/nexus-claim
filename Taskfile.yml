@@ -1,0 +1,27 @@
+build:
+  deps:
+  - dependencies
+  cmds:
+  - CGO_ENABLED=0 go build -a -tags netgo -ldflags "-X main.Version={{.VERSION}} -X main.CommitID={{.COMMIT_ID}}" -o target/{{.PROJECT_NAME}}
+  sources:
+  - ./*.go
+  - ./**/*.go
+  generates:
+  - target/{{.PROJECT_NAME}}
+
+# do not rely on glide.lock, because it changes after each glide install
+dependencies:
+  cmds:
+  - glide --no-color install
+  sources:
+  - ./glide.yaml
+  generates:
+  - ./vendor/**/*.go
+
+unit-test:
+  cmds:
+  - go test -v {{.PACKAGES}}
+  vars:
+    PACKAGES:
+    - {sh: go list ./... | greo -v vendor}
+
