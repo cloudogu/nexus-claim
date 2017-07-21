@@ -17,6 +17,13 @@ func (plan *Plan) Create(repository Repository) {
 	plan.appendAction(&createAction{baseAction{Type: ActionCreate, Repository: repository}})
 }
 
+// Merge merges the repository which was fetched from the nexus api with the one from the model
+// and creates a modify action with the merged repository.
+func (plan *Plan) Merge(clientRepository Repository, modelRepository Repository) {
+	mergedRepository := clientRepository.Merge(modelRepository)
+	plan.Modify(mergedRepository)
+}
+
 // Modify adds a modify action to the plan
 func (plan *Plan) Modify(repository Repository) {
 	plan.appendAction(&modifyAction{baseAction{Type: ActionModify, Repository: repository}})
@@ -115,8 +122,7 @@ func (creator *planCreator) createActionFor(repository ModelRepository) error {
 func (creator *planCreator) handleStatePresent(repository Repository, clientRepository *Repository) {
 	if clientRepository != nil {
 		if !repository.IsEqual(*clientRepository) {
-			mergedRepository := clientRepository.Merge(repository)
-			creator.plan.Modify(mergedRepository)
+			creator.plan.Merge(*clientRepository, repository)
 		}
 	} else {
 		creator.plan.Create(repository)
