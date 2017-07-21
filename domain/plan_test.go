@@ -210,6 +210,28 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	assert.Equal(t, 4, len(action.GetRepository().Properties))
 }
 
+func TestPlan_AddAction(t *testing.T) {
+	plan := &domain.Plan{}
+	plan.AddAction(domain.ActionCreate, domain.Repository{ID: domain.RepositoryID("test-123")})
+	plan.AddAction(domain.ActionModify, domain.Repository{ID: domain.RepositoryID("test-456")})
+	plan.AddAction(domain.ActionRemove, domain.Repository{ID: domain.RepositoryID("test-789")})
+
+	actions := plan.GetActions()
+	require.Equal(t, 3, len(actions))
+	assert.True(t, containsAction(actions, domain.ActionCreate, domain.RepositoryID("test-123")))
+	assert.True(t, containsAction(actions, domain.ActionModify, domain.RepositoryID("test-456")))
+	assert.True(t, containsAction(actions, domain.ActionRemove, domain.RepositoryID("test-789")))
+}
+
+func containsAction(actions []domain.Action, actionType domain.ActionType, id domain.RepositoryID) bool {
+	for _, action := range actions {
+		if action.GetType() == actionType && action.GetRepository().ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 func createTestModel() domain.Model {
 	return domain.Model{
 		Repositories: []domain.ModelRepository{
