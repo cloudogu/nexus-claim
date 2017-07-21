@@ -7,11 +7,11 @@ import (
 
 	"bufio"
 
-	"encoding/json"
 	"io/ioutil"
 	"os"
 
 	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/urfave/cli.v2"
@@ -47,19 +47,18 @@ func TestPlanWriteOutput(t *testing.T) {
 	_, err = execPlan("plan", "-q", "-i", "../resources/detail.hcl", "-o", file.Name())
 	require.Nil(t, err)
 
-	bytes, err := ioutil.ReadAll(file)
+	serializedPlan, err := ioutil.ReadAll(file)
 	require.Nil(t, err)
 
-	plan := &domain.Plan{}
-	err = json.Unmarshal(bytes, plan)
+	plan, err := infrastructure.DeserializePlan(serializedPlan)
 	require.Nil(t, err)
 
 	require.Equal(t, 1, len(plan.GetActions()))
 	action := plan.GetActions()[0]
 
-	assert.Equal(t, domain.ActionCreate, action.Type)
-	assert.Equal(t, domain.RepositoryID("releases"), action.Repository.ID)
-	assert.Equal(t, "Releases", action.Repository.Properties["Name"])
+	assert.Equal(t, domain.ActionCreate, action.GetType())
+	assert.Equal(t, domain.RepositoryID("releases"), action.GetRepository().ID)
+	assert.Equal(t, "Releases", action.GetRepository().Properties["Name"])
 }
 
 func execPlan(args ...string) (*bytes.Buffer, error) {

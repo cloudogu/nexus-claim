@@ -8,9 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"encoding/json"
-
 	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	cli "gopkg.in/urfave/cli.v2"
@@ -50,8 +49,10 @@ func TestApply(t *testing.T) {
 	plan.Create(domain.Repository{ID: domain.RepositoryID("crepo")})
 	plan.Modify(domain.Repository{ID: domain.RepositoryID("mrepo")})
 	plan.Remove(domain.Repository{ID: domain.RepositoryID("rrepo")})
-	encoder := json.NewEncoder(temp)
-	err = encoder.Encode(plan)
+
+	serializedPlan, err := infrastructure.SerializePlan(plan)
+	require.Nil(t, err)
+	_, err = temp.Write(serializedPlan)
 	require.Nil(t, err)
 
 	nexusApiClient := &mockNexusAPIClient{}

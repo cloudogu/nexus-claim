@@ -1,10 +1,6 @@
 package domain
 
-import (
-	"encoding/json"
-
-	"github.com/pkg/errors"
-)
+import "github.com/pkg/errors"
 
 // ActionType describes the type of the action create, modify or remove
 type ActionType uint8
@@ -18,10 +14,30 @@ const (
 	ActionRemove
 )
 
-// Action describes a single unit of work to sync the model with nexus
-type Action struct {
+type actionExecutor func(writer NexusAPIWriter, repository Repository) error
+
+type defaultAction struct {
 	Type       ActionType
 	Repository Repository
+	executor   actionExecutor
+}
+
+func (action *defaultAction) GetType() ActionType {
+	return action.Type
+}
+func (action *defaultAction) GetRepository() Repository {
+	return action.Repository
+}
+
+func (action *defaultAction) Execute(writer NexusAPIWriter) error {
+	return action.executor(writer, action.Repository)
+}
+
+// Action describes a single unit of work to sync the model with nexus
+type Action interface {
+	GetType() ActionType
+	GetRepository() Repository
+	Execute(writer NexusAPIWriter) error
 }
 
 // Plan is a set of actions which must be done to sync the model with nexus
@@ -36,48 +52,43 @@ func (plan *Plan) GetActions() []Action {
 
 // Create adds a create action to the plan
 func (plan *Plan) Create(repository Repository) {
-	plan.action(ActionCreate, repository)
+	plan.action(ActionCreate, repository, func(writer NexusAPIWriter, repo Repository) error {
+		return writer.Create(repo)
+	})
 }
 
 // Modify adds a modify action to the plan
 func (plan *Plan) Modify(repository Repository) {
-	plan.action(ActionModify, repository)
+	plan.action(ActionModify, repository, func(writer NexusAPIWriter, repo Repository) error {
+		return writer.Modify(repo)
+	})
 }
 
 // Remove adds a remove action to the plan
 func (plan *Plan) Remove(repository Repository) {
-	plan.action(ActionRemove, repository)
+	plan.action(ActionRemove, repository, func(writer NexusAPIWriter, repo Repository) error {
+		return writer.Remove(repo.ID)
+	})
 }
 
-func (plan *Plan) action(actionType ActionType, repository Repository) {
-	action := Action{Type: actionType, Repository: repository}
+// AddAction to a plan
+func (plan *Plan) AddAction(actionType ActionType, repository Repository) {
+	switch actionType {
+	case ActionCreate:
+		plan.Create(repository)
+	case ActionModify:
+		plan.Modify(repository)
+	case ActionRemove:
+		plan.Remove(repository)
+	}
+}
+
+func (plan *Plan) action(actionType ActionType, repository Repository, executor actionExecutor) {
+	action := &defaultAction{Type: actionType, Repository: repository, executor: executor}
 	if plan.actions == nil {
 		plan.actions = []Action{}
 	}
 	plan.actions = append(plan.actions, action)
-}
-
-// MarshalJSON is used to marshal the private actions, which could not be written using reflection.
-func (plan *Plan) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Actions []Action
-	}{
-		Actions: plan.actions,
-	})
-}
-
-// UnmarshalJSON is used to unmarshal the private actions from a marshaled plan
-func (plan *Plan) UnmarshalJSON(bytes []byte) error {
-	unmarshaledJSON := struct {
-		Actions []Action
-	}{}
-	err := json.Unmarshal(bytes, &unmarshaledJSON)
-	if err != nil {
-		return err
-	}
-
-	plan.actions = unmarshaledJSON.Actions
-	return nil
 }
 
 // CreatePlan compares the model with the nexus and creates a plan, which describes action to get nexus in sync

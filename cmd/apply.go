@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"encoding/json"
 	"io/ioutil"
 
 	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/pkg/errors"
 	cli "gopkg.in/urfave/cli.v2"
 )
@@ -51,13 +51,12 @@ func createPlanFromPath(path string) (*domain.Plan, error) {
 		return nil, cliError("could not find plan at %s", path)
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	serializedPlan, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, cliError("failed to read plan %s: %v", path, err)
 	}
 
-	plan := &domain.Plan{}
-	err = json.Unmarshal(bytes, plan)
+	plan, err := infrastructure.DeserializePlan(serializedPlan)
 	if err != nil {
 		return nil, cliError("failed to unmarshal plan %s: %v", path, err)
 	}

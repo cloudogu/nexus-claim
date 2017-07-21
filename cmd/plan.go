@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"io/ioutil"
 
 	"github.com/cloudogu/nexus-claim/domain"
@@ -70,7 +69,7 @@ func createFileModelDAO(c *cli.Context) domain.ModelDAO {
 }
 
 func writePlan(output string, plan *domain.Plan) error {
-	bytes, err := json.Marshal(plan)
+	bytes, err := infrastructure.SerializePlan(plan)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal plan")
 	}

@@ -106,7 +106,7 @@ func (app *Application) printPlan(plan *domain.Plan) error {
 }
 
 func (app *Application) printAction(action domain.Action) error {
-	value := fmt.Sprintf("%s %s\n", createOperatorFromActionType(action.Type), action.Repository.ID)
+	value := fmt.Sprintf("%s %s\n", createOperatorFromActionType(action.GetType()), action.GetRepository().ID)
 	_, err := app.Output.Write([]byte(value))
 	if err != nil {
 		return errors.Wrap(err, "failed to write action to output")

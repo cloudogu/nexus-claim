@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"io/ioutil"
 
-	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/pkg/errors"
 	cli "gopkg.in/urfave/cli.v2"
 )
@@ -29,13 +28,12 @@ func (app *Application) show(c *cli.Context) error {
 		return errors.New("usage: nexus-claim show path/to/plan.json")
 	}
 
-	bytes, err := ioutil.ReadFile(planFile)
+	serializedPlan, err := ioutil.ReadFile(planFile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read plan file %s", planFile)
 	}
 
-	plan := &domain.Plan{}
-	err = json.Unmarshal(bytes, plan)
+	plan, err := infrastructure.DeserializePlan(serializedPlan)
 	if err != nil {
 		return errors.Wrapf(err, "failed to unmarshal plan file %s", planFile)
 	}

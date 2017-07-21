@@ -14,8 +14,8 @@ func ApplyPlan(writer NexusAPIWriter, plan *Plan) error {
 }
 
 func applyAction(writer NexusAPIWriter, action Action) error {
-	repository := action.Repository
-	switch action.Type {
+	repository := action.GetRepository()
+	switch action.GetType() {
 	case ActionCreate:
 		return applyActionFunc(repository, writer.Create)
 	case ActionModify:

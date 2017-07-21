@@ -11,6 +11,7 @@ import (
 	"bufio"
 
 	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	cli "gopkg.in/urfave/cli.v2"
@@ -25,10 +26,10 @@ func TestShow(t *testing.T) {
 	plan := &domain.Plan{}
 	plan.Create(domain.Repository{ID: domain.RepositoryID("abc")})
 
-	bytes, err := plan.MarshalJSON()
+	serializedPlan, err := infrastructure.SerializePlan(plan)
 	require.Nil(t, err)
 
-	_, err = file.Write(bytes)
+	_, err = file.Write(serializedPlan)
 	require.Nil(t, err)
 
 	buffer, err := execShow(file.Name())

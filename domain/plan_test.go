@@ -52,8 +52,8 @@ func TestCreatePlanCreateMissingRepository(t *testing.T) {
 	require.Equal(t, 1, len(plan.GetActions()))
 	action := plan.GetActions()[0]
 
-	assert.Equal(t, domain.ActionCreate, action.Type)
-	assert.Equal(t, domain.RepositoryID("missing-repo"), action.Repository.ID)
+	assert.Equal(t, domain.ActionCreate, action.GetType())
+	assert.Equal(t, domain.RepositoryID("missing-repo"), action.GetRepository().ID)
 }
 
 func TestCreatePlanWithUnknownState(t *testing.T) {
@@ -126,8 +126,8 @@ func TestCreatePlanRemoveAbsentRepository(t *testing.T) {
 	require.Equal(t, 1, len(plan.GetActions()))
 
 	action := plan.GetActions()[0]
-	assert.Equal(t, domain.ActionRemove, action.Type)
-	assert.Equal(t, repository, action.Repository)
+	assert.Equal(t, domain.ActionRemove, action.GetType())
+	assert.Equal(t, repository, action.GetRepository())
 }
 
 func TestCreatePlanWithNonChanged(t *testing.T) {
@@ -201,27 +201,13 @@ func TestCreatePlanWithChangedProperty(t *testing.T) {
 	require.Equal(t, 1, len(plan.GetActions()))
 
 	action := plan.GetActions()[0]
-	assert.Equal(t, domain.ActionModify, action.Type)
-	assert.Equal(t, id, action.Repository.ID)
-	assert.Equal(t, "super simple", action.Repository.Properties["name"])
-	assert.Equal(t, "maven2", action.Repository.Properties["type"])
-	assert.Equal(t, "model", action.Repository.Properties["mp"])
-	assert.Equal(t, "client", action.Repository.Properties["cp"])
-	assert.Equal(t, 4, len(action.Repository.Properties))
-}
-
-func TestPlan_MarshalAndUnmarshalJSON(t *testing.T) {
-	plan := &domain.Plan{}
-	plan.Create(domain.Repository{ID: domain.RepositoryID("test-123")})
-
-	bytes, err := plan.MarshalJSON()
-	require.Nil(t, err)
-
-	nplan := &domain.Plan{}
-	err = nplan.UnmarshalJSON(bytes)
-	require.Nil(t, err)
-
-	assert.Equal(t, plan, nplan)
+	assert.Equal(t, domain.ActionModify, action.GetType())
+	assert.Equal(t, id, action.GetRepository().ID)
+	assert.Equal(t, "super simple", action.GetRepository().Properties["name"])
+	assert.Equal(t, "maven2", action.GetRepository().Properties["type"])
+	assert.Equal(t, "model", action.GetRepository().Properties["mp"])
+	assert.Equal(t, "client", action.GetRepository().Properties["cp"])
+	assert.Equal(t, 4, len(action.GetRepository().Properties))
 }
 
 func createTestModel() domain.Model {
