@@ -53,21 +53,33 @@ func (plan *Plan) GetActions() []Action {
 // Create adds a create action to the plan
 func (plan *Plan) Create(repository Repository) {
 	plan.action(ActionCreate, repository, func(writer NexusAPIWriter, repo Repository) error {
-		return writer.Create(repo)
+		err := writer.Create(repo)
+		if err != nil {
+			return errors.Wrapf(err, "failed to create repository %s", repo.ID)
+		}
+		return nil
 	})
 }
 
 // Modify adds a modify action to the plan
 func (plan *Plan) Modify(repository Repository) {
 	plan.action(ActionModify, repository, func(writer NexusAPIWriter, repo Repository) error {
-		return writer.Modify(repo)
+		err := writer.Modify(repo)
+		if err != nil {
+			return errors.Wrapf(err, "failed to modify repository %s", repo.ID)
+		}
+		return nil
 	})
 }
 
 // Remove adds a remove action to the plan
 func (plan *Plan) Remove(repository Repository) {
 	plan.action(ActionRemove, repository, func(writer NexusAPIWriter, repo Repository) error {
-		return writer.Remove(repo.ID)
+		err := writer.Remove(repo.ID)
+		if err != nil {
+			return errors.Wrapf(err, "failed to remove repository %s", repo.ID)
+		}
+		return nil
 	})
 }
 
@@ -89,6 +101,17 @@ func (plan *Plan) action(actionType ActionType, repository Repository, executor 
 		plan.actions = []Action{}
 	}
 	plan.actions = append(plan.actions, action)
+}
+
+// Execute executes every action against the nexus api
+func (plan *Plan) Execute(writer NexusAPIWriter) error {
+	for _, action := range plan.GetActions() {
+		err := action.Execute(writer)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // CreatePlan compares the model with the nexus and creates a plan, which describes action to get nexus in sync
