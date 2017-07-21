@@ -2,44 +2,6 @@ package domain
 
 import "github.com/pkg/errors"
 
-// ActionType describes the type of the action create, modify or remove
-type ActionType uint8
-
-const (
-	// ActionCreate creates the missing repository on nexus
-	ActionCreate ActionType = iota
-	// ActionModify modifies an existing nexus repository, because some properties have changed
-	ActionModify
-	// ActionRemove removes an existing nexus repository, because the model describe it with _state = absent
-	ActionRemove
-)
-
-type actionExecutor func(writer NexusAPIWriter, repository Repository) error
-
-type defaultAction struct {
-	Type       ActionType
-	Repository Repository
-	executor   actionExecutor
-}
-
-func (action *defaultAction) GetType() ActionType {
-	return action.Type
-}
-func (action *defaultAction) GetRepository() Repository {
-	return action.Repository
-}
-
-func (action *defaultAction) Execute(writer NexusAPIWriter) error {
-	return action.executor(writer, action.Repository)
-}
-
-// Action describes a single unit of work to sync the model with nexus
-type Action interface {
-	GetType() ActionType
-	GetRepository() Repository
-	Execute(writer NexusAPIWriter) error
-}
-
 // Plan is a set of actions which must be done to sync the model with nexus
 type Plan struct {
 	actions []Action
@@ -52,38 +14,20 @@ func (plan *Plan) GetActions() []Action {
 
 // Create adds a create action to the plan
 func (plan *Plan) Create(repository Repository) {
-	plan.action(ActionCreate, repository, func(writer NexusAPIWriter, repo Repository) error {
-		err := writer.Create(repo)
-		if err != nil {
-			return errors.Wrapf(err, "failed to create repository %s", repo.ID)
-		}
-		return nil
-	})
+	plan.appendAction(&createAction{baseAction{Type: ActionCreate, Repository: repository}})
 }
 
 // Modify adds a modify action to the plan
 func (plan *Plan) Modify(repository Repository) {
-	plan.action(ActionModify, repository, func(writer NexusAPIWriter, repo Repository) error {
-		err := writer.Modify(repo)
-		if err != nil {
-			return errors.Wrapf(err, "failed to modify repository %s", repo.ID)
-		}
-		return nil
-	})
+	plan.appendAction(&modifyAction{baseAction{Type: ActionModify, Repository: repository}})
 }
 
 // Remove adds a remove action to the plan
 func (plan *Plan) Remove(repository Repository) {
-	plan.action(ActionRemove, repository, func(writer NexusAPIWriter, repo Repository) error {
-		err := writer.Remove(repo.ID)
-		if err != nil {
-			return errors.Wrapf(err, "failed to remove repository %s", repo.ID)
-		}
-		return nil
-	})
+	plan.appendAction(&removeAction{baseAction{Type: ActionRemove, Repository: repository}})
 }
 
-// AddAction to a plan
+// AddAction adds an action to the plan
 func (plan *Plan) AddAction(actionType ActionType, repository Repository) {
 	switch actionType {
 	case ActionCreate:
@@ -95,8 +39,7 @@ func (plan *Plan) AddAction(actionType ActionType, repository Repository) {
 	}
 }
 
-func (plan *Plan) action(actionType ActionType, repository Repository, executor actionExecutor) {
-	action := &defaultAction{Type: actionType, Repository: repository, executor: executor}
+func (plan *Plan) appendAction(action Action) {
 	if plan.actions == nil {
 		plan.actions = []Action{}
 	}

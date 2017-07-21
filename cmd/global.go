@@ -7,8 +7,6 @@ import (
 
 	"os"
 
-	"fmt"
-
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/pkg/errors"
@@ -106,23 +104,9 @@ func (app *Application) printPlan(plan *domain.Plan) error {
 }
 
 func (app *Application) printAction(action domain.Action) error {
-	value := fmt.Sprintf("%s %s\n", createOperatorFromActionType(action.GetType()), action.GetRepository().ID)
-	_, err := app.Output.Write([]byte(value))
+	_, err := app.Output.Write([]byte(action.ToString() + "\n"))
 	if err != nil {
-		return errors.Wrap(err, "failed to write action to output")
+		return errors.Wrap(err, "failed to write action")
 	}
-	return nil
-}
-
-func createOperatorFromActionType(actionType domain.ActionType) string {
-	switch actionType {
-	case domain.ActionCreate:
-		return "+"
-	case domain.ActionModify:
-		return "~"
-	case domain.ActionRemove:
-		return "-"
-	default:
-		return "#"
-	}
+	return err
 }
