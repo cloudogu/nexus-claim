@@ -43,24 +43,6 @@ func TestRepository_IsEqualWithMissing(t *testing.T) {
 	assert.False(t, repo1.IsEqual(repo2))
 }
 
-func TestRepository_IsEqualWithSliceMap(t *testing.T) {
-	repo1 := createSimpleRepository("name", "hello")
-	sliceMap1 := make(map[string]interface{})
-	sliceMap1["one"] = "1"
-	repo1.Properties["sliceMap"] = []map[string]interface{}{sliceMap1}
-
-	repo2 := createSimpleRepository("name", "hello")
-	sliceMap2 := make(map[string]interface{})
-	sliceMap2["one"] = "1"
-	sliceMap2["two"] = "2"
-	repo2.Properties["sliceMap"] = []map[string]interface{}{sliceMap2}
-	assert.True(t, repo1.IsEqual(repo2))
-
-	sliceMap2["one"] = "3"
-	repo2.Properties["sliceMap"] = []map[string]interface{}{sliceMap2}
-	assert.False(t, repo1.IsEqual(repo2))
-}
-
 func TestRepository_Merge(t *testing.T) {
 	propsA := make(domain.Properties)
 	propsA["name"] = "a"

@@ -2,37 +2,51 @@ package domain
 
 import "reflect"
 
+type sliceOfProperties []Properties
+
 func IsEqual(left interface{}, right interface{}) bool {
-	if isSliceOfInterfaces(left) && isSliceOfInterfaces(right) {
-		leftSliceOfMap, leftCastOk := castToSliceOfMaps(left.([]interface{}))
-		if leftCastOk {
-			rightSliceOfMap, rightCastOk := castToSliceOfMaps(right.([]interface{}))
-			if rightCastOk {
-				return isSliceEqual(leftSliceOfMap, rightSliceOfMap)
-			}
+	if isSliceOfInterfaces(left, right) {
+		leftSliceOfProperties, rightSliceOfProperties, ok := castToSliceOfProperties(left, right)
+		if ok {
+			return isSliceEqual(leftSliceOfProperties, rightSliceOfProperties)
 		}
 	}
 	return reflect.DeepEqual(left, right)
 }
 
-func isSliceOfInterfaces(value interface{}) bool {
+func castToSliceOfProperties(left interface{}, right interface{}) (sliceOfProperties, sliceOfProperties, bool) {
+	leftSliceOfProperties, leftCastOk := castValueToSliceOfProperties(left.([]interface{}))
+	if leftCastOk {
+		rightSliceOfProperties, rightCastOk := castValueToSliceOfProperties(right.([]interface{}))
+		if rightCastOk {
+			return leftSliceOfProperties, rightSliceOfProperties, true
+		}
+	}
+	return nil, nil, false
+}
+
+func isSliceOfInterfaces(left interface{}, right interface{}) bool {
+	return isValueSliceOfInterfaces(left) && isValueSliceOfInterfaces(right)
+}
+
+func isValueSliceOfInterfaces(value interface{}) bool {
 	typeOf := reflect.TypeOf(value)
 	return typeOf.Kind() == reflect.Slice && typeOf.Elem().Kind() == reflect.Interface
 }
 
-func castToSliceOfMaps(value []interface{}) ([]map[string]interface{}, bool) {
-	sliceOfMaps := []map[string]interface{}{}
+func castValueToSliceOfProperties(value []interface{}) (sliceOfProperties, bool) {
+	maps := make(sliceOfProperties, 0)
 	for _, item := range value {
 		mapItem, ok := item.(map[string]interface{})
 		if !ok {
 			return nil, false
 		}
-		sliceOfMaps = append(sliceOfMaps, mapItem)
+		maps = append(maps, Properties(mapItem))
 	}
-	return sliceOfMaps, true
+	return maps, true
 }
 
-func isSliceEqual(left []map[string]interface{}, right []map[string]interface{}) bool {
+func isSliceEqual(left sliceOfProperties, right sliceOfProperties) bool {
 	if len(left) > len(right) {
 		return false
 	}
@@ -45,7 +59,7 @@ func isSliceEqual(left []map[string]interface{}, right []map[string]interface{})
 	return true
 }
 
-func contains(item map[string]interface{}, slice []map[string]interface{}) bool {
+func contains(item Properties, slice sliceOfProperties) bool {
 	for _, sliceItem := range slice {
 		if containsAllOf(item, sliceItem) {
 			return true
@@ -54,7 +68,7 @@ func contains(item map[string]interface{}, slice []map[string]interface{}) bool 
 	return false
 }
 
-func containsAllOf(left map[string]interface{}, right map[string]interface{}) bool {
+func containsAllOf(left Properties, right Properties) bool {
 	for key, value := range left {
 		if IsEqual(value, right[key]) {
 			return true
