@@ -55,7 +55,12 @@ func (client *httpNexusAPIClient) Get(repositoryType domain.RepositoryType, id d
 		return nil, client.statusCodeError(response.StatusCode)
 	}
 
-	return client.parseRepositoryResponse(response)
+	repository, err := client.parseRepositoryResponse(response)
+	if err != nil {
+		return nil, err
+	}
+	repository.Type = repositoryType
+	return repository, nil
 }
 
 func (client *httpNexusAPIClient) createRepositoryURL(repositoryType domain.RepositoryType, id domain.RepositoryID) string {

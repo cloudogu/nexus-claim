@@ -1,6 +1,6 @@
 package domain
 
-import "reflect"
+import "log"
 
 const (
 	// TypeRepository can be a hosted, proxy or a virtual nexus repository
@@ -28,7 +28,8 @@ type Repository struct {
 // IsEqual returns true if all properties are equal to the other repository.
 func (repository Repository) IsEqual(other Repository) bool {
 	for key, value := range repository.Properties {
-		if !reflect.DeepEqual(value, other.Properties[key]) {
+		if !IsEqual(value, other.Properties[key]) {
+			log.Printf("property %s of repository %s has changed (%v != %v)", key, repository.ID, value, other.Properties[key])
 			return false
 		}
 	}
@@ -44,5 +45,5 @@ func (repository Repository) Merge(other Repository) Repository {
 	for key, value := range other.Properties {
 		properties[key] = value
 	}
-	return Repository{ID: repository.ID, Properties: properties}
+	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}
 }

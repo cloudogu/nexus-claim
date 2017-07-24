@@ -27,6 +27,19 @@ func TestHttpNexusAPIClient_Get(t *testing.T) {
 	assert.Equal(t, domain.TypeRepository, repository.Type)
 }
 
+func TestHttpNexusAPIClient_GetGroup(t *testing.T) {
+	server := servce(t, "/service/local/repo_groups/test-repo", "group.json")
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	repository, err := client.Get(domain.TypeGroup, domain.RepositoryID("test-repo"))
+	require.Nil(t, err)
+
+	assert.Equal(t, domain.RepositoryID("test-repo"), repository.ID)
+	assert.Equal(t, "Simple test repository", repository.Properties["name"])
+	assert.Equal(t, domain.TypeGroup, repository.Type)
+}
+
 func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
 	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
 	defer server.Close()
