@@ -85,13 +85,23 @@ func TestGet(t *testing.T) {
 	assert.Equal(t, domain.RepositoryID("simple"), repository.ID)
 	assert.Equal(t, "Simple Repository", repository.Properties["Name"])
 	assert.Equal(t, domain.StatePresent, repository.State)
-	assert.Equal(t, domain.RepositoryTypeRepository, repository.Type)
+	assert.Equal(t, domain.TypeRepository, repository.Type)
 }
 
 func TestGetMultiple(t *testing.T) {
 	repositories := get(t, "state.hcl").Repositories
 	assert.Equal(t, domain.StatePresent, repositories[0].State)
 	assert.Equal(t, domain.StateAbsent, repositories[1].State)
+}
+
+func TestGetGroup(t *testing.T) {
+	repositories := get(t, "group.hcl").Repositories
+	require.Equal(t, 1, len(repositories))
+
+	assert.Equal(t, domain.RepositoryID("public"), repositories[0].ID)
+	assert.Equal(t, domain.TypeGroup, repositories[0].Type)
+	assert.Equal(t, "hello", repositories[0].Properties["data"])
+	assert.Equal(t, domain.StatePresent, repositories[0].State)
 }
 
 func get(t *testing.T, file string) domain.Model {

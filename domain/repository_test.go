@@ -47,13 +47,13 @@ func TestRepository_Merge(t *testing.T) {
 	propsA := make(domain.Properties)
 	propsA["name"] = "a"
 	propsA["description"] = "A"
-	repoA := domain.Repository{domain.RepositoryID("a"), propsA, domain.RepositoryTypeRepository}
+	repoA := domain.Repository{domain.RepositoryID("a"), propsA, domain.TypeRepository}
 
 	propsB := make(domain.Properties)
 	propsB["name"] = "b"
 	propsB["description"] = "B"
 	propsB["contact"] = "b@b.de"
-	repoB := domain.Repository{domain.RepositoryID("b"), propsB, domain.RepositoryTypeRepository}
+	repoB := domain.Repository{domain.RepositoryID("b"), propsB, domain.TypeRepository}
 
 	assertion := assert.New(t)
 

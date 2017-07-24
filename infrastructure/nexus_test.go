@@ -24,7 +24,7 @@ func TestHttpNexusAPIClient_Get(t *testing.T) {
 
 	assert.Equal(t, domain.RepositoryID("test-repo"), repository.ID)
 	assert.Equal(t, "Simple test repository", repository.Properties["name"])
-	assert.Equal(t, domain.RepositoryTypeRepository, repository.Type)
+	assert.Equal(t, domain.TypeRepository, repository.Type)
 }
 
 func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {

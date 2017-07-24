@@ -1,15 +1,17 @@
 package domain
 
 const (
-	// RepositoryTypeRepository is the type for a normal nexus repository
-	RepositoryTypeRepository RepositoryType = iota
+	// TypeRepository can be a hosted, proxy or a virtual nexus repository
+	TypeRepository RepositoryType = iota
+	// TypeGroup are able to group a set of repositories to single one
+  TypeGroup
 )
-
-// RepositoryType defines the type of a repository
-type RepositoryType uint8
 
 // RepositoryID is the identifier of a nexus repository
 type RepositoryID string
+
+// RepositoryType defines the type of a repository
+type RepositoryType uint8
 
 // Properties represents each field except id of repository
 type Properties map[string]interface{}

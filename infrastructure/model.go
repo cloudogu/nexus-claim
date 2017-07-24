@@ -26,29 +26,23 @@ type fileModelDAO struct {
 
 func (dao *fileModelDAO) Get() (domain.Model, error) {
 	model := domain.Model{}
-	repositories := []domain.ModelRepository{}
 
 	file, err := dao.parseFile()
 	if err != nil {
 		return model, err
 	}
 
-	repositoryNodes, err := dao.findRepositoryNodes(file)
+	repositories, err := dao.findAndParse(file, "repository", domain.TypeRepository)
 	if err != nil {
 		return model, err
 	}
 
-	for _, repositoryNode := range repositoryNodes {
-		repository, err := dao.parseRepositoryNode(repositoryNode)
-		if err != nil {
-			return model, err
-		}
-
-		repository.Type = domain.RepositoryTypeRepository
-		repositories = append(repositories, repository)
+	groups, err := dao.findAndParse(file, "repository_group", domain.TypeGroup)
+	if err != nil {
+		return model, err
 	}
 
-	model.Repositories = repositories
+	model.Repositories = append(repositories, groups...)
 
 	return model, nil
 }
@@ -71,11 +65,34 @@ func (dao *fileModelDAO) parseFile() (*ast.File, error) {
 	return file, nil
 }
 
-func (dao *fileModelDAO) findRepositoryNodes(file *ast.File) ([]*ast.ObjectItem, error) {
+func (dao *fileModelDAO) findAndParse(file *ast.File, nodeName string, repositoryType domain.RepositoryType) ([]domain.ModelRepository, error) {
+	nodes, err := dao.findNodes(file, nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	return dao.parseNodes(nodes, repositoryType)
+}
+
+func (dao *fileModelDAO) findNodes(file *ast.File, nodeName string) ([]*ast.ObjectItem, error) {
 	if objectList, ok := file.Node.(*ast.ObjectList); ok {
-		return objectList.Filter("repository").Items, nil
+		return objectList.Filter(nodeName).Items, nil
 	}
 	return nil, errors.Errorf("file does not start with an objectlist")
+}
+
+func (dao *fileModelDAO) parseNodes(nodes []*ast.ObjectItem, repositoryType domain.RepositoryType) ([]domain.ModelRepository, error) {
+	repositories := []domain.ModelRepository{}
+	for _, repositoryNode := range nodes {
+		repository, err := dao.parseRepositoryNode(repositoryNode)
+		if err != nil {
+			return nil, err
+		}
+
+		repository.Type = repositoryType
+		repositories = append(repositories, repository)
+	}
+	return repositories, nil
 }
 
 func (dao *fileModelDAO) parseRepositoryNode(repositoryNode *ast.ObjectItem) (domain.ModelRepository, error) {
