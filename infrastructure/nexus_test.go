@@ -216,7 +216,7 @@ func TestHttpNexusAPIClient_RemoveWithInvalidStatusCode(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	err := client.Remove(domain.RepositoryID("test-repo"))
+	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "invalid status code 404")
 }
@@ -230,7 +230,7 @@ func TestHttpNexusAPIClient_Remove(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	err := client.Remove(domain.RepositoryID("test-repo"))
+	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
 	require.Nil(t, err)
 }
 

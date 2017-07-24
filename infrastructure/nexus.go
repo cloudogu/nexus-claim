@@ -208,7 +208,9 @@ func (client *httpNexusAPIClient) statusCodeError(statusCode int) error {
 	return errors.Errorf("invalid status code %d", statusCode)
 }
 
-func (client *httpNexusAPIClient) Remove(id domain.RepositoryID) error {
+func (client *httpNexusAPIClient) Remove(repository domain.Repository) error {
+	id := repository.ID
+
 	request, err := client.createRequest("DELETE", client.createRepositoryURL(id), nil)
 	if err != nil {
 		return err

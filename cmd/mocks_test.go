@@ -6,7 +6,7 @@ type mockNexusAPIClient struct {
 	repositories map[domain.RepositoryID]*domain.Repository
 	Created      []domain.Repository
 	Modified     []domain.Repository
-	Removed      []domain.RepositoryID
+	Removed      []domain.Repository
 }
 
 func (mock *mockNexusAPIClient) add(repo domain.Repository) {
@@ -52,10 +52,10 @@ func (client *mockNexusAPIClient) Modify(repository domain.Repository) error {
 	return nil
 }
 
-func (client *mockNexusAPIClient) Remove(id domain.RepositoryID) error {
+func (client *mockNexusAPIClient) Remove(repository domain.Repository) error {
 	if client.Removed == nil {
-		client.Removed = make([]domain.RepositoryID, 0)
+		client.Removed = make([]domain.Repository, 0)
 	}
-	client.Removed = append(client.Removed, id)
+	client.Removed = append(client.Removed, repository)
 	return nil
 }

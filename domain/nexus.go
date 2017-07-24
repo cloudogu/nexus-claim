@@ -15,7 +15,7 @@ type NexusAPIWriter interface {
 	Modify(repository Repository) error
 
 	// Remove removes an existing repository from nexus server
-	Remove(id RepositoryID) error
+	Remove(repository Repository) error
 }
 
 // NexusAPIClient is able to execute crud operations against the nexus api

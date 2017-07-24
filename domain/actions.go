@@ -94,7 +94,7 @@ func (action *removeAction) ToString() string {
 }
 
 func (action *removeAction) Execute(writer NexusAPIWriter) error {
-	err := writer.Remove(action.Repository.ID)
+	err := writer.Remove(action.Repository)
 	if err != nil {
 		return errors.Wrapf(err, "failed to remove repository %s", action.Repository.ID)
 	}
