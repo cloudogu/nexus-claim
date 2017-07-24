@@ -44,6 +44,7 @@ func (dao *fileModelDAO) Get() (domain.Model, error) {
 			return model, err
 		}
 
+		repository.Type = domain.RepositoryTypeRepository
 		repositories = append(repositories, repository)
 	}
 

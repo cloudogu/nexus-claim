@@ -136,6 +136,7 @@ func (dto *repositoryDTO) to() *domain.Repository {
 	return &domain.Repository{
 		ID:         domain.RepositoryID(dto.Data["id"].(string)),
 		Properties: dto.Data,
+		Type:       domain.RepositoryTypeRepository,
 	}
 }
 

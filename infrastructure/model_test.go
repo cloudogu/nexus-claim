@@ -85,6 +85,7 @@ func TestGet(t *testing.T) {
 	assert.Equal(t, domain.RepositoryID("simple"), repository.ID)
 	assert.Equal(t, "Simple Repository", repository.Properties["Name"])
 	assert.Equal(t, domain.StatePresent, repository.State)
+	assert.Equal(t, domain.RepositoryTypeRepository, repository.Type)
 }
 
 func TestGetMultiple(t *testing.T) {

@@ -1,5 +1,13 @@
 package domain
 
+const (
+	// RepositoryTypeRepository is the type for a normal nexus repository
+	RepositoryTypeRepository RepositoryType = iota
+)
+
+// RepositoryType defines the type of a repository
+type RepositoryType uint8
+
 // RepositoryID is the identifier of a nexus repository
 type RepositoryID string
 
@@ -10,6 +18,7 @@ type Properties map[string]interface{}
 type Repository struct {
 	ID         RepositoryID
 	Properties Properties
+	Type       RepositoryType
 }
 
 // IsEqual returns true if all properties are equal to the other repository.
