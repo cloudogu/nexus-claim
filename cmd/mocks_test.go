@@ -31,7 +31,7 @@ func (mock *mockNexusAPIClient) init() {
 	}
 }
 
-func (mock *mockNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repository, error) {
+func (mock *mockNexusAPIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 	mock.init()
 	return mock.repositories[id], nil
 }

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	repositoryServiceURL = "/service/local/repositories"
+	repositoryServiceURL = "/service/local/"
 	contentType          = "application/json; charset=UTF-8"
 )
 
@@ -34,8 +34,8 @@ type httpNexusAPIClient struct {
 	httpClient *http.Client
 }
 
-func (client *httpNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repository, error) {
-	repositoryURL := client.createRepositoryURL(id)
+func (client *httpNexusAPIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
+	repositoryURL := client.createRepositoryURL(repositoryType, id)
 	request, err := client.createReadRequest(repositoryURL)
 	if err != nil {
 		return nil, err
@@ -58,8 +58,8 @@ func (client *httpNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repositor
 	return client.parseRepositoryResponse(response)
 }
 
-func (client *httpNexusAPIClient) createRepositoryURL(id domain.RepositoryID) string {
-	return client.createRepositoryServiceURL() + "/" + string(id)
+func (client *httpNexusAPIClient) createRepositoryURL(repositoryType domain.RepositoryType, id domain.RepositoryID) string {
+	return client.createRepositoryServiceURL(repositoryType) + "/" + string(id)
 }
 
 func (client *httpNexusAPIClient) createReadRequest(url string) (*http.Request, error) {
@@ -142,7 +142,7 @@ func (dto *repositoryDTO) to() *domain.Repository {
 
 func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 	dto := newRepositoryDTO().from(repository)
-	request, err := client.createWriteRequest("POST", client.createRepositoryServiceURL(), dto)
+	request, err := client.createWriteRequest("POST", client.createRepositoryServiceURL(repository.Type), dto)
 	if err != nil {
 		return err
 	}
@@ -159,8 +159,15 @@ func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 	return nil
 }
 
-func (client *httpNexusAPIClient) createRepositoryServiceURL() string {
-	return client.url + repositoryServiceURL
+func (client *httpNexusAPIClient) createRepositoryServiceURL(repositoryType domain.RepositoryType) string {
+	var typeUrlPart string
+	switch repositoryType {
+	case domain.TypeRepository:
+		typeUrlPart = "repositories"
+	case domain.TypeGroup:
+		typeUrlPart = "repo_groups"
+	}
+	return client.url + repositoryServiceURL + typeUrlPart
 }
 
 func (client *httpNexusAPIClient) createWriteRequest(method, url string, body interface{}) (*http.Request, error) {
@@ -188,7 +195,7 @@ func (client *httpNexusAPIClient) createJSONBody(object interface{}) (io.Reader,
 
 func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
 	dto := newRepositoryDTO().from(repository)
-	request, err := client.createWriteRequest("PUT", client.createRepositoryURL(repository.ID), dto)
+	request, err := client.createWriteRequest("PUT", client.createRepositoryURL(repository.Type, repository.ID), dto)
 	if err != nil {
 		return err
 	}
@@ -212,7 +219,7 @@ func (client *httpNexusAPIClient) statusCodeError(statusCode int) error {
 func (client *httpNexusAPIClient) Remove(repository domain.Repository) error {
 	id := repository.ID
 
-	request, err := client.createRequest("DELETE", client.createRepositoryURL(id), nil)
+	request, err := client.createRequest("DELETE", client.createRepositoryURL(repository.Type, id), nil)
 	if err != nil {
 		return err
 	}

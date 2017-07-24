@@ -104,7 +104,7 @@ func (creator *planCreator) createPlan() error {
 }
 
 func (creator *planCreator) createActionFor(repository ModelRepository) error {
-	clientRepository, err := creator.reader.Get(repository.ID)
+	clientRepository, err := creator.reader.Get(repository.Type, repository.ID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read repository %s from client api", repository.ID)
 	}
