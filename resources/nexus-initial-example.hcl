@@ -35,3 +35,23 @@ repository "scm-releases" {
   writePolicy = "READ_ONLY"
   _state = "present"
 }
+
+repository_group "public" {
+  name = "Public Repositories"
+  format = "maven2"
+  provider = "maven2"
+  repoType = "group"
+  exposed = true
+  repositories = [{
+    id = "releases"
+  }, {
+    id = "snapshots"
+  },{
+    id = "central"
+  }, {
+    id = "scm-releases"
+  }, {
+    id = "thirdparty"
+  }]
+  _state = "present"
+}
