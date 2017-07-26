@@ -65,7 +65,7 @@ func TestApply(t *testing.T) {
 	require.Equal(t, 1, len(nexusApiClient.Modified))
 	assert.Equal(t, domain.RepositoryID("mrepo"), nexusApiClient.Modified[0].ID)
 	require.Equal(t, 1, len(nexusApiClient.Removed))
-	assert.Equal(t, domain.RepositoryID("rrepo"), nexusApiClient.Removed[0])
+	assert.Equal(t, domain.RepositoryID("rrepo"), nexusApiClient.Removed[0].ID)
 }
 
 func execApply(args ...string) (*bytes.Buffer, int, error) {
