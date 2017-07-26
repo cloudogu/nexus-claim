@@ -9,6 +9,8 @@ import (
 
 	"encoding/json"
 
+	"reflect"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,11 +21,25 @@ func TestHttpNexusAPIClient_Get(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	repository, err := client.Get(domain.RepositoryID("test-repo"))
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("test-repo"))
 	require.Nil(t, err)
 
 	assert.Equal(t, domain.RepositoryID("test-repo"), repository.ID)
 	assert.Equal(t, "Simple test repository", repository.Properties["name"])
+	assert.Equal(t, domain.TypeRepository, repository.Type)
+}
+
+func TestHttpNexusAPIClient_GetGroup(t *testing.T) {
+	server := servce(t, "/service/local/repo_groups/test-repo", "group.json")
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	repository, err := client.Get(domain.TypeGroup, domain.RepositoryID("test-repo"))
+	require.Nil(t, err)
+
+	assert.Equal(t, domain.RepositoryID("test-repo"), repository.ID)
+	assert.Equal(t, "Simple test repository", repository.Properties["name"])
+	assert.Equal(t, domain.TypeGroup, repository.Type)
 }
 
 func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
@@ -31,7 +47,7 @@ func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	repository, err := client.Get(domain.RepositoryID("non-existing-repo"))
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("non-existing-repo"))
 	require.Nil(t, err)
 	require.Nil(t, repository)
 }
@@ -43,7 +59,7 @@ func TestHttpNexusAPIClient_GetInvalidStatusCode(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	repository, err := client.Get(domain.RepositoryID("some-repo"))
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("some-repo"))
 	require.NotNil(t, err)
 	require.Nil(t, repository)
 	require.Contains(t, err.Error(), "invalid status code 503")
@@ -54,7 +70,7 @@ func TestHttpNexusAPIClient_GetInvalidBody(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	repository, err := client.Get(domain.RepositoryID("invalid-body"))
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("invalid-body"))
 	require.NotNil(t, err)
 	require.Nil(t, repository)
 	require.Contains(t, err.Error(), "failed to unmarshal response body")
@@ -68,7 +84,7 @@ func TestHttpNexusAPIClient_GetAcceptHeader(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	client.Get(domain.RepositoryID("accept"))
+	client.Get(domain.TypeRepository, domain.RepositoryID("accept"))
 }
 
 func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
@@ -82,7 +98,19 @@ func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	client.Get(domain.RepositoryID("some-repo"))
+	client.Get(domain.TypeRepository, domain.RepositoryID("some-repo"))
+}
+
+func TestHttpNexusAPIClient_GetWithFloatConverting(t *testing.T) {
+	server := servce(t, "/service/local/repositories/number-repo", "number.json")
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("number-repo"))
+	require.Nil(t, err)
+
+	assert.Equal(t, 42, repository.Properties["number"])
+	assert.Equal(t, reflect.Int, reflect.TypeOf(repository.Properties["number"]).Kind())
 }
 
 func TestHttpNexusAPIClient_Create(t *testing.T) {
@@ -116,6 +144,7 @@ func TestHttpNexusAPIClient_Create(t *testing.T) {
 	repository := domain.Repository{
 		ID:         domain.RepositoryID("test-repo"),
 		Properties: properties,
+		Type:       domain.TypeRepository,
 	}
 	err := client.Create(repository)
 	require.Nil(t, err)
@@ -216,7 +245,7 @@ func TestHttpNexusAPIClient_RemoveWithInvalidStatusCode(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	err := client.Remove(domain.RepositoryID("test-repo"))
+	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "invalid status code 404")
 }
@@ -230,7 +259,23 @@ func TestHttpNexusAPIClient_Remove(t *testing.T) {
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
-	err := client.Remove(domain.RepositoryID("test-repo"))
+	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
+	require.Nil(t, err)
+}
+
+func TestHttpNexusAPIClient_RemoveGroup(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/service/local/repo_groups/test-repo", r.URL.Path)
+		assert.Equal(t, "DELETE", r.Method)
+		w.WriteHeader(204)
+	}))
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	err := client.Remove(domain.Repository{
+		ID:   domain.RepositoryID("test-repo"),
+		Type: domain.TypeGroup,
+	})
 	require.Nil(t, err)
 }
 

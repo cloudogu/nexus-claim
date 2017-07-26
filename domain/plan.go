@@ -19,9 +19,13 @@ func (plan *Plan) Create(repository Repository) {
 
 // Merge merges the repository which was fetched from the nexus api with the one from the model
 // and creates a modify action with the merged repository.
-func (plan *Plan) Merge(clientRepository Repository, modelRepository Repository) {
-	mergedRepository := clientRepository.Merge(modelRepository)
+func (plan *Plan) Merge(clientRepository Repository, modelRepository Repository) error {
+	mergedRepository, err := clientRepository.Merge(modelRepository)
+	if err != nil {
+		return errors.Wrapf(err, "failed to merge repository %s", modelRepository.ID)
+	}
 	plan.Modify(mergedRepository)
+	return nil
 }
 
 // Modify adds a modify action to the plan
@@ -104,14 +108,17 @@ func (creator *planCreator) createPlan() error {
 }
 
 func (creator *planCreator) createActionFor(repository ModelRepository) error {
-	clientRepository, err := creator.reader.Get(repository.ID)
+	clientRepository, err := creator.reader.Get(repository.Type, repository.ID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read repository %s from client api", repository.ID)
 	}
 
 	switch repository.State {
 	case StatePresent:
-		creator.handleStatePresent(repository.Repository, clientRepository)
+		err := creator.handleStatePresent(repository.Repository, clientRepository)
+		if err != nil {
+			return err
+		}
 	case StateAbsent:
 		creator.handleStateAbsent(repository.Repository, clientRepository)
 	}
@@ -119,14 +126,18 @@ func (creator *planCreator) createActionFor(repository ModelRepository) error {
 	return nil
 }
 
-func (creator *planCreator) handleStatePresent(repository Repository, clientRepository *Repository) {
+func (creator *planCreator) handleStatePresent(repository Repository, clientRepository *Repository) error {
 	if clientRepository != nil {
 		if !repository.IsEqual(*clientRepository) {
-			creator.plan.Merge(*clientRepository, repository)
+			err := creator.plan.Merge(*clientRepository, repository)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		creator.plan.Create(repository)
 	}
+	return nil
 }
 
 func (creator *planCreator) handleStateAbsent(repository Repository, clientRepository *Repository) {

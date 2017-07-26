@@ -258,7 +258,7 @@ func (mock *mockNexusAPIClient) Add(repository domain.Repository) {
 	mock.repositories[repository.ID] = &repository
 }
 
-func (mock *mockNexusAPIClient) Get(id domain.RepositoryID) (*domain.Repository, error) {
+func (mock *mockNexusAPIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 	return mock.repositories[id], mock.err
 }
 

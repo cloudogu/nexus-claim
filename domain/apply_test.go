@@ -53,14 +53,14 @@ func TestApplyPlan(t *testing.T) {
 	assert.Equal(t, domain.RepositoryID("c1"), writer.creations[0].ID)
 	require.Equal(t, 1, len(writer.modifications))
 	require.Equal(t, 1, len(writer.removes))
-	assert.Equal(t, domain.RepositoryID("r1"), writer.removes[0])
+	assert.Equal(t, domain.RepositoryID("r1"), writer.removes[0].ID)
 }
 
 func newMockNexusAPIWriter() *mockNexusAPIWriter {
 	return &mockNexusAPIWriter{
 		creations:     make([]domain.Repository, 0),
 		modifications: make([]domain.Repository, 0),
-		removes:       make([]domain.RepositoryID, 0),
+		removes:       make([]domain.Repository, 0),
 	}
 }
 
@@ -68,7 +68,7 @@ type mockNexusAPIWriter struct {
 	err           error
 	creations     []domain.Repository
 	modifications []domain.Repository
-	removes       []domain.RepositoryID
+	removes       []domain.Repository
 }
 
 func (mock *mockNexusAPIWriter) Create(repository domain.Repository) error {
@@ -87,10 +87,10 @@ func (mock *mockNexusAPIWriter) Modify(repository domain.Repository) error {
 	return nil
 }
 
-func (mock *mockNexusAPIWriter) Remove(id domain.RepositoryID) error {
+func (mock *mockNexusAPIWriter) Remove(repository domain.Repository) error {
 	if mock.err != nil {
 		return mock.err
 	}
-	mock.removes = append(mock.removes, id)
+	mock.removes = append(mock.removes, repository)
 	return nil
 }
