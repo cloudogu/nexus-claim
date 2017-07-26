@@ -180,14 +180,14 @@ func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 }
 
 func (client *httpNexusAPIClient) createRepositoryServiceURL(repositoryType domain.RepositoryType) string {
-	var typeUrlPart string
+	var typeURLPart string
 	switch repositoryType {
 	case domain.TypeRepository:
-		typeUrlPart = "repositories"
+		typeURLPart = "repositories"
 	case domain.TypeGroup:
-		typeUrlPart = "repo_groups"
+		typeURLPart = "repo_groups"
 	}
-	return client.url + repositoryServiceURL + typeUrlPart
+	return client.url + repositoryServiceURL + typeURLPart
 }
 
 func (client *httpNexusAPIClient) createWriteRequest(method, url string, body interface{}) (*http.Request, error) {
