@@ -9,6 +9,8 @@ import (
 
 	"encoding/json"
 
+	"reflect"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -97,6 +99,18 @@ func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
 	client.Get(domain.TypeRepository, domain.RepositoryID("some-repo"))
+}
+
+func TestHttpNexusAPIClient_GetWithFloatConverting(t *testing.T) {
+	server := servce(t, "/service/local/repositories/number-repo", "number.json")
+	defer server.Close()
+
+	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
+	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("number-repo"))
+	require.Nil(t, err)
+
+	assert.Equal(t, 42, repository.Properties["number"])
+	assert.Equal(t, reflect.Int, reflect.TypeOf(repository.Properties["number"]).Kind())
 }
 
 func TestHttpNexusAPIClient_Create(t *testing.T) {

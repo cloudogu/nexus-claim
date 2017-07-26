@@ -13,6 +13,8 @@ import (
 
 	"bytes"
 
+	"reflect"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/pkg/errors"
 )
@@ -138,11 +140,24 @@ func (dto *repositoryDTO) from(repository domain.Repository) *repositoryDTO {
 }
 
 func (dto *repositoryDTO) to() *domain.Repository {
+	properties := dto.convertFloatToInt()
 	return &domain.Repository{
 		ID:         domain.RepositoryID(dto.Data["id"].(string)),
-		Properties: dto.Data,
+		Properties: properties,
 		Type:       domain.TypeRepository,
 	}
+}
+
+func (dto *repositoryDTO) convertFloatToInt() domain.Properties {
+	properties := make(domain.Properties)
+	for key, value := range dto.Data {
+		if reflect.TypeOf(value).Kind() == reflect.Float64 {
+			properties[key] = int(value.(float64))
+		} else {
+			properties[key] = value
+		}
+	}
+	return properties
 }
 
 func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
