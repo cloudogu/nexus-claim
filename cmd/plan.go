@@ -32,7 +32,7 @@ func createPlanCommand(actionFunc cli.ActionFunc) cli.Command {
 			},
 			cli.StringFlag{
 				Name:  "output, o",
-				Usage: "Write plan to `OUTPUT`",
+				Usage: "Write plan to `OUTPUT`, use '-' to write to stdout",
 			},
 		},
 	}

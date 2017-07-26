@@ -22,7 +22,7 @@ func TestApplyWithoutPlan(t *testing.T) {
 }
 
 func TestApplyWithNonExistingPlan(t *testing.T) {
-	_, ec, err := execApply("apply", "some/non/existing/file")
+	_, ec, err := execApply("apply", "-i", "some/non/existing/file")
 	assert.Equal(t, 1, ec)
 	assert.EqualError(t, err, "could not find plan at some/non/existing/file")
 }
@@ -35,7 +35,7 @@ func TestApplyWithInvalidPlan(t *testing.T) {
 	_, err = temp.Write([]byte("invalid json"))
 	require.Nil(t, err)
 
-	_, ec, err := execApply("apply", temp.Name())
+	_, ec, err := execApply("apply", "-i", temp.Name())
 	assert.Equal(t, 1, ec)
 	assert.Contains(t, err.Error(), "failed to unmarshal plan "+temp.Name())
 }
@@ -56,9 +56,48 @@ func TestApply(t *testing.T) {
 	require.Nil(t, err)
 
 	nexusApiClient := &mockNexusAPIClient{}
-	_, ec, err := execApplyWithNexusApiClient(nexusApiClient, "apply", temp.Name())
+	_, ec, err := execApplyWithNexusApiClient(nexusApiClient, "apply", "-i", temp.Name())
 	require.Nil(t, err)
 	require.Equal(t, 0, ec)
+
+	require.Equal(t, 1, len(nexusApiClient.Created))
+	assert.Equal(t, domain.RepositoryID("crepo"), nexusApiClient.Created[0].ID)
+	require.Equal(t, 1, len(nexusApiClient.Modified))
+	assert.Equal(t, domain.RepositoryID("mrepo"), nexusApiClient.Modified[0].ID)
+	require.Equal(t, 1, len(nexusApiClient.Removed))
+	assert.Equal(t, domain.RepositoryID("rrepo"), nexusApiClient.Removed[0].ID)
+}
+
+func TestApplyFromInput(t *testing.T) {
+	plan := &domain.Plan{}
+	plan.Create(domain.Repository{ID: domain.RepositoryID("crepo")})
+	plan.Modify(domain.Repository{ID: domain.RepositoryID("mrepo")})
+	plan.Remove(domain.Repository{ID: domain.RepositoryID("rrepo")})
+
+	var input bytes.Buffer
+	serializedPlan, err := infrastructure.SerializePlan(plan)
+	require.Nil(t, err)
+	input.Write(serializedPlan)
+
+	nexusApiClient := &mockNexusAPIClient{}
+	cmdApp := Application{
+		Input:          &input,
+		nexusAPIClient: nexusApiClient,
+	}
+
+	app := cli.NewApp()
+	app.Commands = []cli.Command{
+		createApplyCommand(cmdApp.apply),
+	}
+
+	exitCode := 0
+	cli.OsExiter = func(ec int) {
+		exitCode = ec
+	}
+
+	err = app.Run([]string{"", "apply", "-i", "-"})
+	require.Nil(t, err)
+	require.Equal(t, 0, exitCode)
 
 	require.Equal(t, 1, len(nexusApiClient.Created))
 	assert.Equal(t, domain.RepositoryID("crepo"), nexusApiClient.Created[0].ID)
