@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"io/ioutil"
@@ -62,8 +61,4 @@ func createPlanFromPath(path string) (*domain.Plan, error) {
 	}
 
 	return plan, nil
-}
-
-func cliError(format string, args ...interface{}) error {
-	return cli.NewExitError(fmt.Sprintf(format, args...), 1)
 }

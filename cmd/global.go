@@ -7,6 +7,8 @@ import (
 
 	"os"
 
+	"fmt"
+
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/cloudogu/nexus-claim/infrastructure"
 	"github.com/pkg/errors"
@@ -17,6 +19,7 @@ import (
 // The main use for a central command holder is testing.
 type Application struct {
 	Output         io.Writer
+	Input          io.Reader
 	commands       cli.Commands
 	nexusAPIClient domain.NexusAPIClient
 }
@@ -24,6 +27,7 @@ type Application struct {
 var (
 	application = &Application{
 		Output:   os.Stdout,
+		Input:    os.Stdin,
 		commands: []cli.Command{},
 	}
 )
@@ -109,4 +113,8 @@ func (app *Application) printAction(action domain.Action) error {
 		return errors.Wrap(err, "failed to write action")
 	}
 	return err
+}
+
+func cliError(format string, args ...interface{}) error {
+	return cli.NewExitError(fmt.Sprintf(format, args...), 1)
 }
