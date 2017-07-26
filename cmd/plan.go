@@ -32,7 +32,7 @@ func createPlanCommand(actionFunc cli.ActionFunc) cli.Command {
 			},
 			cli.StringFlag{
 				Name:  "output, o",
-				Usage: "Write plan to `OUTPUT`",
+				Usage: "Write plan to `OUTPUT`, use '-' to write to stdout",
 			},
 		},
 	}
@@ -47,20 +47,21 @@ func (app *Application) plan(c *cli.Context) error {
 		return err
 	}
 
-	if !c.Bool("quiet") {
-		err = app.printPlan(plan)
+	output := c.String("output")
+	if output != "" {
+		err = app.writePlan(output, plan)
 		if err != nil {
-			return err
+			return cliError("failed to write plan: %v", err)
 		}
 	}
 
-	output := c.String("output")
-	if output != "" {
-		err = writePlan(output, plan)
+	if !c.Bool("quiet") && output != "-" {
+		err = app.printPlan(plan)
 		if err != nil {
-			return err
+			return cliError("failed to print plan: %v", err)
 		}
 	}
+
 	return nil
 }
 
@@ -68,16 +69,31 @@ func createFileModelDAO(c *cli.Context) domain.ModelDAO {
 	return infrastructure.NewFileModelDAO(c.String("input"))
 }
 
-func writePlan(output string, plan *domain.Plan) error {
+func (app *Application) writePlan(output string, plan *domain.Plan) error {
 	bytes, err := infrastructure.SerializePlan(plan)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal plan")
 	}
 
-	err = ioutil.WriteFile(output, bytes, 0644)
-	if err != nil {
-		return errors.Wrapf(err, "failed to write plan to %s", output)
+	if output == "-" {
+		return app.writePlanToOutput(bytes)
 	}
 
+	return app.writePlanToFile(output, bytes)
+}
+
+func (app *Application) writePlanToOutput(plan []byte) error {
+	_, err := app.Output.Write(plan)
+	if err != nil {
+		return errors.Wrap(err, "failed to write plan to output")
+	}
+	return nil
+}
+
+func (app *Application) writePlanToFile(file string, plan []byte) error {
+	err := ioutil.WriteFile(file, plan, 0644)
+	if err != nil {
+		return errors.Wrapf(err, "failed to write plan to %s", file)
+	}
 	return nil
 }

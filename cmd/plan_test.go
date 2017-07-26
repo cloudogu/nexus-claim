@@ -18,8 +18,9 @@ import (
 )
 
 func TestPlan(t *testing.T) {
-	buffer, err := execPlan("plan", "-i", "../resources/nexus-initial-example.hcl")
+	buffer, err, ec := execPlan("plan", "-i", "../resources/nexus-initial-example.hcl")
 	require.Nil(t, err)
+	require.Equal(t, 0, ec)
 
 	scanner := bufio.NewScanner(buffer)
 	require.True(t, scanner.Scan())
@@ -33,8 +34,9 @@ func TestPlan(t *testing.T) {
 }
 
 func TestPlanWithQuietParameter(t *testing.T) {
-	buffer, err := execPlan("plan", "-q", "-i", "../resources/nexus-initial-example.hcl")
+	buffer, err, ec := execPlan("plan", "-q", "-i", "../resources/nexus-initial-example.hcl")
 	require.Nil(t, err)
+	require.Equal(t, 0, ec)
 	assert.Equal(t, 0, buffer.Len())
 }
 
@@ -44,8 +46,9 @@ func TestPlanWriteOutput(t *testing.T) {
 
 	defer os.Remove(file.Name())
 
-	_, err = execPlan("plan", "-q", "-i", "../resources/detail.hcl", "-o", file.Name())
+	_, err, ec := execPlan("plan", "-q", "-i", "../resources/detail.hcl", "-o", file.Name())
 	require.Nil(t, err)
+	require.Equal(t, 0, ec)
 
 	serializedPlan, err := ioutil.ReadAll(file)
 	require.Nil(t, err)
@@ -61,7 +64,25 @@ func TestPlanWriteOutput(t *testing.T) {
 	assert.Equal(t, "Releases", action.GetRepository().Properties["Name"])
 }
 
-func execPlan(args ...string) (*bytes.Buffer, error) {
+func TestPlanWriteToStdOut(t *testing.T) {
+	buffer, err, ec := execPlan("plan", "-i", "../resources/detail.hcl", "-o", "-")
+	require.Nil(t, err)
+	require.Equal(t, 0, ec)
+
+	plan, err := infrastructure.DeserializePlan(buffer.Bytes())
+	require.Nil(t, err)
+
+	actions := plan.GetActions()
+	require.Equal(t, 1, len(actions))
+}
+
+func execPlan(args ...string) (*bytes.Buffer, error, int) {
+	// capture exitCode and do not exit
+	exitCode := 0
+	cli.OsExiter = func(ec int) {
+		exitCode = ec
+	}
+
 	var buffer bytes.Buffer
 	cmdApp := Application{
 		Output:         &buffer,
@@ -76,5 +97,5 @@ func execPlan(args ...string) (*bytes.Buffer, error) {
 	// add addition arg to first index to the slice, because os.Args contains the path to
 	// the application on index 0
 	err := app.Run(append([]string{""}, args...))
-	return &buffer, err
+	return &buffer, err, exitCode
 }
