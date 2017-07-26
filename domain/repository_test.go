@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/stretchr/testify/assert"
+  "github.com/stretchr/testify/require"
 )
 
 func TestRepository_IsEqualWithStrings(t *testing.T) {
@@ -39,8 +40,8 @@ func TestRepository_IsEqualWithMissing(t *testing.T) {
 	repo2 := createSimpleRepository("name", "hello")
 	assert.True(t, repo1.IsEqual(repo2))
 
-	repo2 = createSimpleRepository("other-key", "other")
-	assert.False(t, repo1.IsEqual(repo2))
+	repo2.Properties["missing"] = "somemissing"
+	assert.True(t, repo1.IsEqual(repo2))
 }
 
 func TestRepository_Merge(t *testing.T) {
@@ -57,7 +58,8 @@ func TestRepository_Merge(t *testing.T) {
 
 	assertion := assert.New(t)
 
-	mergedRepo := repoB.Merge(repoA)
+	mergedRepo, err := repoB.Merge(repoA)
+  require.Nil(t, err)
 	assertion.Equal(domain.RepositoryID("b"), mergedRepo.ID)
 
 	mergedProps := mergedRepo.Properties

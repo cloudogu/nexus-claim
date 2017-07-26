@@ -1,6 +1,12 @@
 package domain
 
-import "log"
+import (
+	"strings"
+
+	"github.com/imdario/mergo"
+	"github.com/kr/pretty"
+	"github.com/pkg/errors"
+)
 
 const (
 	// TypeRepository can be a hosted, proxy or a virtual nexus repository
@@ -27,23 +33,28 @@ type Repository struct {
 
 // IsEqual returns true if all properties are equal to the other repository.
 func (repository Repository) IsEqual(other Repository) bool {
-	for key, value := range repository.Properties {
-		if !IsEqual(value, other.Properties[key]) {
-			log.Printf("property %s of repository %s has changed (%v != %v)", key, repository.ID, value, other.Properties[key])
-			return false
+	diff := pretty.Diff(repository.Properties, other.Properties)
+
+	changes := make([]string, 0)
+	for _, diffEntry := range diff {
+		if !strings.Contains(diffEntry, "missing") {
+			changes = append(changes, diffEntry)
 		}
 	}
-	return true
+	return len(changes) == 0
 }
 
 // Merge copies all properties from the other repository, merges them with this repository and returns a new repository.
-func (repository Repository) Merge(other Repository) Repository {
+func (repository Repository) Merge(other Repository) (Repository, error) {
 	properties := make(Properties)
 	for key, value := range repository.Properties {
 		properties[key] = value
 	}
-	for key, value := range other.Properties {
-		properties[key] = value
+
+	err := mergo.MergeWithOverwrite(&properties, other.Properties)
+	if err != nil {
+		return repository, errors.Wrap(err, "failed to merge repository properties")
 	}
-	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}
+
+	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}, nil
 }
