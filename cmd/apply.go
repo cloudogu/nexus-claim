@@ -11,7 +11,7 @@ import (
 	cli "gopkg.in/urfave/cli.v2"
 )
 
-// init registers the subcommand show to the application
+// init registers the subcommand apply to the application
 func init() {
 	application.registerCommand(createApplyCommand(application.apply))
 }
