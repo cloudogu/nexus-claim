@@ -1,6 +1,4 @@
 import org.sonatype.nexus.blobstore.api.BlobStoreManager
-import org.sonatype.nexus.common.log.LogConfigurationCustomizer
-import org.sonatype.nexus.repository.config.Configuration
 import org.sonatype.nexus.repository.maven.LayoutPolicy
 import org.sonatype.nexus.repository.maven.VersionPolicy
 import org.sonatype.nexus.repository.storage.WritePolicy
@@ -13,16 +11,31 @@ repository.createMavenHosted('private-again',
   WritePolicy.ALLOW_ONCE,
   LayoutPolicy.STRICT)
 */
-def createMavenRepository(String name, String blobStoreName, String strictContentTypeValidation, String versionPolicy, String writePolicy, String layoutPolicy) {
+def createHostedRepository(String name, String recipeName, String blobStoreName, String writePolicy, String strictContentTypeValidation) {
+
+  def configuration = createHostedConfiguration(name, recipeName, blobStoreName, writePolicy, strictContentTypeValidation)
+
+  try {
+    repository.repositoryManager.create(configuration)
+  }
+  catch (Exception e){
+    return e
+  }
+
+  //repository.createMavenHosted(name, typedBlobStoreName,typedStrictContentTypeValidation, typedVersionPolicy, typedWritePolicy, typedLayoutPolicy);
+
+}
+
+
+def createHostedConfiguration(String name, String recipeName, String blobStoreName, String writePolicy, String strictContentTypeValidation){
 
   def typedBlobStoreName = getblobStoreName(blobStoreName)
   def typedStrictContentTypeValidation = getStrictContentTypeValidation(strictContentTypeValidation)
-  def typedVersionPolicy = getVersionPolicy(versionPolicy)
   def typedWritePolicy = getWritePolicy(writePolicy)
-  def typedLayoutPolicy = getLayoutPolicy(layoutPolicy)
 
-  repository.createMavenHosted(name, typedBlobStoreName,typedStrictContentTypeValidation, typedVersionPolicy, typedWritePolicy, typedLayoutPolicy);
+  def configuration = repository.createHosted(name,recipeName,typedBlobStoreName, typedWritePolicy, typedStrictContentTypeValidation)
 
+  return configuration
 }
 
 def getStrictContentTypeValidation(String strictContentTypeValidation){
@@ -39,6 +52,7 @@ def getblobStoreName(String blobStoreName){
   return blobStoreName
 }
 
+/*
 def getVersionPolicy(String versionPolicy){
   switch (versionPolicy.toLowerCase()){
     case "mixed":
@@ -51,7 +65,7 @@ def getVersionPolicy(String versionPolicy){
       return VersionPolicy.RELEASE
   }
 }
-
+*/
 def getWritePolicy(String writePolicy) {
   switch (writePolicy.toLowerCase()) {
     case "allow_once":
@@ -65,6 +79,7 @@ def getWritePolicy(String writePolicy) {
   }
 }
 
+/*
 def getLayoutPolicy(String layoutPolicy){
   switch (layoutPolicy.toLowerCase()) {
     case "permissive":
@@ -75,7 +90,7 @@ def getLayoutPolicy(String layoutPolicy){
       break;
   }
 }
-
+*/
 /*
 def get
 
@@ -100,23 +115,25 @@ enum RepositoryType {
 */
 
 def name
+def recipeName
 def blobStoreName
 def strictContentTypeValidation
-def versionPolicy
 def writePolicy
+/*
+def versionPolicy
 def layoutPolicy
+*/
 
 
 if (args != ""){
   def value = args.tokenize(' ')
   name = value[0]
-  blobStoreName = value[1]
-  strictContentTypeValidation = value[2]
-  versionPolicy = value[3]
-  writePolicy= value[4]
-  layoutPolicy= value[5]
+  recipeName = value[1]
+  blobStoreName = value[2]
+  writePolicy = value[3]
+  strictContentTypeValidation = value[4]
 
-  this.createMavenRepository(name,blobStoreName,strictContentTypeValidation,versionPolicy,writePolicy,layoutPolicy)
+  this.createHostedRepository(name,recipeName, blobStoreName, writePolicy, strictContentTypeValidation)
 
 }
 
