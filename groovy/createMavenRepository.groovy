@@ -1,4 +1,3 @@
-import org.sonatype.nexus.blobstore.api.BlobStore
 import org.sonatype.nexus.blobstore.api.BlobStoreManager
 import org.sonatype.nexus.common.log.LogConfigurationCustomizer
 import org.sonatype.nexus.repository.config.Configuration
@@ -22,13 +21,9 @@ def createMavenRepository(String name, String blobStoreName, String strictConten
   def typedWritePolicy = getWritePolicy(writePolicy)
   def typedLayoutPolicy = getLayoutPolicy(layoutPolicy)
 
-
   repository.createMavenHosted(name, typedBlobStoreName,typedStrictContentTypeValidation, typedVersionPolicy, typedWritePolicy, typedLayoutPolicy);
-  repository.repositoryManager.update(new Configuration()
 
-  LogConfigurationCustomizer.Configuration
 }
-
 
 def getStrictContentTypeValidation(String strictContentTypeValidation){
   if (strictContentTypeValidation.equals("true")) {
@@ -103,6 +98,7 @@ enum RepositoryType {
   PROXY;
 }
 */
+
 def name
 def blobStoreName
 def strictContentTypeValidation
