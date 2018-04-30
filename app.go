@@ -1,3 +1,4 @@
+//go:generate go run scripts/generate.go groovy_scripts scripts
 package main
 
 import (
