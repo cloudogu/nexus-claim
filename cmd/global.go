@@ -90,7 +90,7 @@ func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClie
 	if app.nexusAPIClient != nil {
 		return app.nexusAPIClient
 	}
-	return infrastructure.NewHTTPNexusAPIClient(
+	return infrastructure.NewHTTPNexus3APIClient(
 		c.GlobalString("server"),
 		c.GlobalString("username"),
 		c.GlobalString("password"),

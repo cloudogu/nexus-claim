@@ -1,16 +1,25 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
+
+//../groovy/nexus-scripting execute --payload test22 read-Repository.groovy
+
 if (args != "") {
-  String id = parseRepositoryId(args)
-  def configurationMap = retrieveRepositoryConfiguration(id)
+  // String id = parseRepositoryId(args)
+
+  // return id
+
+
+  def configurationMap = retrieveRepositoryConfiguration(args)
 
   return JsonOutput.toJson(configurationMap)
 }
 
 private String parseRepositoryId(String[] input) {
 
+
   def jsonData = new JsonSlurper().parseText(input[0])
+
   return jsonData.id
 }
 
@@ -24,8 +33,8 @@ private Map<String, String> retrieveRepositoryConfiguration(String repositoryId)
   result.put ("attributes", repository.getConfiguration().getAttributes())
 
   //add what Nexus calls meta-data
-  result.put ("name", repository.getName())
-  result.put ("format", repository.getFormat())
+  result.put ("id", repository.getName())
+  result.put ("format", repository.getFormat().value)
   result.put ("url", repository.getUrl())
   result.put ("type", repository.getType().getValue())
 
