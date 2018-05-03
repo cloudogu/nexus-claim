@@ -98,7 +98,7 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
   fmt.Println(readAbleJson)
 
   // Todo : Fehler obwohl es mit nexus-scripting funktioniert
-  _, err = script.ExecuteWithJSONPayload(readAbleJson)
+  _, err = script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
