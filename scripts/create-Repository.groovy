@@ -10,56 +10,8 @@ class Repository {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
 }
 
-// Not needed
-def getDefaultAttributeValues(String type, String remoteURL){
-
-  Map<String, Map<String, Object>> defaultAttributeValues = new HashMap<String,Object>()
-
-  if (type.equals("hosted")) {
-
-    Map<String,Object> storage = new HashMap<String,Object>()
-    storage.put("blobStoreName",BlobStoreManager.DEFAULT_BLOBSTORE_NAME)
-    storage.put("writePolicy",WritePolicy.ALLOW)
-    storage.put("strictContentTypeValidation",false)
-    defaultAttributeValues.put("attributes",storage)
-  }
-  else if (type.equals("proxy")){
-    Map<String,Object> httpClient = new HashMap<String,Object>()
-    Map<String,Object> connection = new HashMap<String,Object>()
-    connection.put("blocked",false)
-    connection.put("autoBlock",true)
-    httpClient.put("connection",connection)
-    defaultAttributeValues.put("httpclient",httpClient)
-
-    Map<String,Object> proxy = new HashMap<String,Object>()
-    proxy.put("remoteUrl",remoteURL)
-    proxy.put("contentMaxAge",1440)
-    proxy.put("metadataMaxAge",1440)
-    defaultAttributeValues.put("proxy",proxy)
-
-    Map<String,Object> negativeCache = new HashMap<String,Object>()
-    negativeCache.put("enabled",true)
-    negativeCache.put("timeToLive",1440)
-    defaultAttributeValues.put("negativeCache",negativeCache)
-
-    Map<String,Object> storage = new HashMap<String,Object>()
-    storage.put("blobStoreName",BlobStoreManager.DEFAULT_BLOBSTORE_NAME)
-    storage.put("strictContentTypeValidation",false)
-    defaultAttributeValues.put("attributes",storage)
-
-  }
-  else if(type.equals("group")){
-    Map<String,Object> storage = new HashMap<String,Object>()
-    storage.put("blobStoreName",BlobStoreManager.DEFAULT_BLOBSTORE_NAME)
-    defaultAttributeValues.put("attributes",storage)
-
-  }
-
-  return defaultAttributeValues
-}
-
-
 def convertJsonFileToRepo(String jsonData) {
+
 
   def inputJson = new JsonSlurper().parseText(jsonData)
   Repository repo = new Repository()
@@ -74,30 +26,34 @@ def createRepository(Repository repo) {
 
   Configuration conf = new Configuration()
 
-
+  def confs
   if (getRecipeName(repo).contains("hosted")){
 
     conf = createHostedConfiguration(repo)
   }
-
   repository.createRepository(conf)
 
-  return "successfull"
+  return "successful"
 }
+
 
 def createHostedConfiguration(Repository repo){
 
+
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
+  def online = getOnline(repo)
   def attributes = repo.properties.get("attributes")
-
+  attributes.put("storage",attributes.get("storage").get(0))
 
   Configuration conf = new Configuration(
     repositoryName: name,
     recipeName: recipeName,
-    online: true,
+    online: online,
     attributes: attributes
   )
+
+
 
   if (recipeName.contains("maven")){
     conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
@@ -108,15 +64,19 @@ def createHostedConfiguration(Repository repo){
 }
 
 def getName(Repository repo){
-  String name = repo.getProperties().get("id")
+  String name = repo.getProperties().get("name")
   return name
 }
 
 def getRecipeName(Repository repo){
-  String recipeName = repo.getProperties().get("format") + "-" + repo.getProperties().get("type")
+  String recipeName = repo.getProperties().get("recipeName")
   return recipeName
 }
 
+def getOnline(Repository repo){
+  String online = repo.getProperties().get("online")
+  return online
+}
 
 if (args != "") {
 
