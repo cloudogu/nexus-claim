@@ -12,7 +12,6 @@ class Repository {
 
 def convertJsonFileToRepo(String jsonData) {
 
-
   def inputJson = new JsonSlurper().parseText(jsonData)
   Repository repo = new Repository()
   inputJson.each {
@@ -26,7 +25,6 @@ def createRepository(Repository repo) {
 
   Configuration conf = new Configuration()
 
-  def confs
   if (getRecipeName(repo).contains("hosted")){
 
     conf = createHostedConfiguration(repo)
@@ -38,7 +36,6 @@ def createRepository(Repository repo) {
 
 
 def createHostedConfiguration(Repository repo){
-
 
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
@@ -52,8 +49,6 @@ def createHostedConfiguration(Repository repo){
     online: online,
     attributes: attributes
   )
-
-
 
   if (recipeName.contains("maven")){
     conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
