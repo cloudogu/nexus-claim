@@ -86,12 +86,35 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
     return err
   }
 
-  jsonData,err := json.Marshal(repository.Properties)
+  fmt.Println("creating " + repository.ID)
+
+  readAbleJson, err := repositoryToJson(repository)
   if err != nil {
-    return errors.Wrap(err, "failed to marshal the json data")
+    return err
   }
 
-  readAbleJson:= string(jsonData)
+  _, err = script.ExecuteWithStringPayload(readAbleJson)
+  if err != nil {
+    return err
+  }
+
+  return nil
+}
+
+func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
+
+  modifyRepositoryScript := MODIFY_REPOSITORY
+  script, err := client.manager.Create("modifyRepository",modifyRepositoryScript)
+  if err != nil {
+    return err
+  }
+
+  fmt.Println("modifying " + repository.ID)
+
+  readAbleJson, err := repositoryToJson(repository)
+  if err != nil {
+    return err
+  }
 
   fmt.Println(readAbleJson)
 
@@ -103,12 +126,8 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
   return nil
 }
 
-func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
-	return nil
-}
-
 func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
-
+  
   deleteRepositoryScript := DELETE_REPOSITORY;
   StringID := string(repository.ID)
   script,err := client.manager.Create("deleteRepository",deleteRepositoryScript)
@@ -116,7 +135,7 @@ func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
     return err
   }
 
-  fmt.Println("delete " + StringID)
+  fmt.Println("deleting " + StringID)
 
   _, err = script.ExecuteWithStringPayload(StringID)
   if err != nil {
@@ -128,6 +147,17 @@ func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
 
 func (client *httpNexus3APIClient) isStatusNotFound(output string) bool {
   return strings.Contains(output,"404")
+}
+
+func repositoryToJson(repository domain.Repository) (string, error){
+  
+  jsonData,err := json.Marshal(repository.Properties)
+  if err != nil {
+    return "", errors.Wrap(err, "failed to marshal the json data")
+  }
+  readAbleJson:= string(jsonData)
+  
+  return readAbleJson,nil
 }
 
 func newRepository3DTO() *repository3DTO {
