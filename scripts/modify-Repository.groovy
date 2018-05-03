@@ -3,13 +3,9 @@ import org.sonatype.nexus.repository.config.Configuration
 import groovy.json.JsonSlurper
 
 if (args != "") {
-
-
   def repo = convertJsonFileToRepo(args)
   def name = getName(repo)
-
   def conf = createHostedConfiguration(repo)
-
   def output = modifyRepository(name, conf)
 
   return output
@@ -48,18 +44,26 @@ def convertJsonFileToRepo(String jsonData) {
 
 def modifyRepository(String repositoryID, Configuration configuration) {
 
-
-  repository.getRepositoryManager().get(repositoryID).stop()
+  try {
+    repository.getRepositoryManager().get(repositoryID).stop()
+  }
+  catch (Exception e){
+    return "cannot stop service " + e.toString()
+  }
 
   try {
     repository.getRepositoryManager().get(repositoryID).update(configuration)
   }
   catch (Exception e){
-    return e
+    return "cannot update repository " + repositoryID + ". " + e.toString()
   }
-  repository.getRepositoryManager().get(repositoryID).start()
 
-
+  try {
+    repository.getRepositoryManager().get(repositoryID).start()
+  }
+  catch (Exception e){
+    return "cannot start service " + e.toString()
+  }
 
   return "successfully modified " + repositoryID
 }
