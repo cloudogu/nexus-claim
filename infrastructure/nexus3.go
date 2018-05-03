@@ -1,3 +1,4 @@
+//go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 package infrastructure
 
 // -s http://localhost:8082/nexus -u admin -p admin123 plan -i ./groovy/nexus-initial-example.hcl -o nexus-initial-example.json
@@ -37,7 +38,6 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
   readRepositoryScript := READ_REPOSITORY;
   StringID := string(id)
   script,err := client.manager.Create("readRepository",readRepositoryScript)
-
 
   if err != nil {
     return nil, err

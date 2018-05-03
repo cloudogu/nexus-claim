@@ -8,9 +8,9 @@ import org.sonatype.nexus.repository.storage.WritePolicy
  */
 class Repository {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
-
 }
 
+// Not needed
 def getDefaultAttributeValues(String type, String remoteURL){
 
   Map<String, Map<String, Object>> defaultAttributeValues = new HashMap<String,Object>()
@@ -72,41 +72,57 @@ def convertJsonFileToRepo(String jsonData) {
 
 def createRepository(Repository repo) {
 
+  Configuration conf = new Configuration()
 
-  String name = repo.properties.get("name")
-  repo.properties.remove("name")
 
-  String recipeName = repo.properties.get("recipeName")
-  repo.properties.remove("recipeName")
+  if (getRecipeName(repo).contains("hosted")){
 
-  String state = repo.properties.get("_state")
-  repo.properties.remove("_state")
+    conf = createHostedConfiguration(repo)
+  }
 
+  repository.createRepository(conf)
+
+  return "successfull"
+}
+
+def createHostedConfiguration(Repository repo){
+
+  def name = getName(repo)
+  def recipeName = getRecipeName(repo)
+  def attributes = repo.properties.get("attributes")
 
 
   Configuration conf = new Configuration(
     repositoryName: name,
     recipeName: recipeName,
-    online: repo.properties.get("online"),
-    attributes: [
-      storage: [
-        blobStoreName              : repo.properties.get("blobStoreName"),
-        writePolicy                : writePolicy,
-        strictContentTypeValidation: strictContentTypeValidation
-      ] as Map
-    ] as Map
+    online: true,
+    attributes: attributes
   )
 
-  conf.setAttributes()
+  if (recipeName.contains("maven")){
+    conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
+  }
 
-  repository.createRepository(conf)
+  return conf
 
+}
+
+def getName(Repository repo){
+  String name = repo.getProperties().get("id")
+  return name
+}
+
+def getRecipeName(Repository repo){
+  String recipeName = repo.getProperties().get("format") + "-" + repo.getProperties().get("type")
+  return recipeName
 }
 
 
 if (args != "") {
 
   def rep = convertJsonFileToRepo(args)
-  createRepository(rep)
+  def newRepo = createRepository(rep)
+
+  return newRepo
 
 }

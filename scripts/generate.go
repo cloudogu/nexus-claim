@@ -12,6 +12,7 @@ func main() {
 	target := os.Args[1] + ".go"
 	directory := os.Args[2]
 
+
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
 		panic(err)
