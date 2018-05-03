@@ -113,7 +113,7 @@ dependencies: info
 #generate
 generate:
 	@echo "generating go files"
-	go generate
+	cd infrastructure && go generate
 
 ${EXECUTABLE}: dependencies generate
 	@echo "compiling ..."

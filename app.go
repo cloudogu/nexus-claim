@@ -1,4 +1,4 @@
-//go:generate go run scripts/generate.go infrastructure/groovy_scripts scripts
+
 
 package main
 
