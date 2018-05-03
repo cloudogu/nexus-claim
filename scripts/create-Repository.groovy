@@ -30,11 +30,14 @@ def createRepository(Repository repo) {
     conf = createHostedConfiguration(repo)
   }
 
-  repository.createRepository(conf)
-
+  try {
+    repository.createRepository(conf)
+  }
+  catch (Exception e){
+    return e
+  }
   return "successfully created " + getName(repo)
 }
-
 
 def createHostedConfiguration(Repository repo){
 
