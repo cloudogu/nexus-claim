@@ -29,9 +29,10 @@ def createRepository(Repository repo) {
 
     conf = createHostedConfiguration(repo)
   }
+
   repository.createRepository(conf)
 
-  return "successful"
+  return "successfully created " + getName(repo)
 }
 
 
@@ -40,6 +41,7 @@ def createHostedConfiguration(Repository repo){
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
   def online = getOnline(repo)
+
   def attributes = repo.properties.get("attributes")
   attributes.put("storage",attributes.get("storage").get(0))
 
