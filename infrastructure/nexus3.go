@@ -93,10 +93,12 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
     return err
   }
 
-  _, err = script.ExecuteWithStringPayload(readAbleJson)
+  output, err := script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
+  fmt.Println(output)
+
 
   return nil
 }
@@ -118,10 +120,11 @@ func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
 
   fmt.Println(readAbleJson)
 
-  _, err = script.ExecuteWithStringPayload(readAbleJson)
+  output, err := script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
+  fmt.Println(output)
 
   return nil
 }
