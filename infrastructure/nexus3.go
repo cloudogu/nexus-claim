@@ -16,6 +16,7 @@ import (
   "github.com/cloudogu/nexus-scripting/manager"
   "fmt"
   "reflect"
+  "strings"
 )
 
 
@@ -43,15 +44,19 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
     return nil, err
   }
 
-  jsonData, err := script.ExecuteWithStringPayload(StringID)
+  fmt.Println("getting " + StringID)
 
+  jsonData, err := script.ExecuteWithStringPayload(StringID)
   if err != nil {
     return nil, err
   }
+  if client.isStatusNotFound(jsonData){
+    return nil, nil
+  }
 
-  // Todo ParseRepositoryJson fertig stellen
   repository, err := client.parseRepositoryJson(jsonData)
 
+  fmt.Println(repository.Properties)
   if err != nil {
     return nil, err
   }
@@ -62,23 +67,16 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
 
 func (client *httpNexus3APIClient) parseRepositoryJson(jsonData string) (*domain.Repository, error) {
 
-  fmt.Println(jsonData)
+  dto := newRepository3DTO()
 
-	dto := newRepository3DTO()
-	bytes,err := json.Marshal(jsonData)
+  dto,err := dto.from(jsonData)
+
   if err != nil {
-    return nil, errors.Wrap(err, "failed to marshal the json data")
+    return nil,err
   }
-
-  err = json.Unmarshal(bytes, dto)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal the json data")
-	}
-	fmt.Println(dto.attributes)
 
 	return dto.to(), nil
 }
-
 
 func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
 
@@ -118,6 +116,8 @@ func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
     return err
   }
 
+  fmt.Println("delete " + StringID)
+
   _, err = script.ExecuteWithStringPayload(StringID)
   if err != nil {
     return err
@@ -126,32 +126,37 @@ func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
   return nil
 }
 
+func (client *httpNexus3APIClient) isStatusNotFound(output string) bool {
+  return strings.Contains(output,"404")
+}
+
 func newRepository3DTO() *repository3DTO {
   return &repository3DTO{}
 }
 
 type repository3DTO struct {
-  Format string
-  Id string
-  Types string
-  Url string
-  attributes domain.Properties
+  Data domain.Properties
 }
 
-func (dto *repository3DTO) from(repository domain.Repository) *repository3DTO {
-  properties := repository.Properties
-  if properties == nil {
-    properties = make(domain.Properties)
+func (dto *repository3DTO) from(jsonData string) (*repository3DTO,error) {
+
+  var jsonMap map[string]interface{}
+
+  err := json.Unmarshal([]byte(jsonData),&jsonMap)
+  if err != nil {
+    return nil,err
   }
-  dto.attributes = properties
-  dto.Id = string(repository.ID)
-  return dto
+
+  dto.Data = jsonMap
+  dto.Data["id"] = jsonMap["id"].(string)
+
+  return dto,nil
 }
 
 func (dto *repository3DTO) to() *domain.Repository {
   properties := dto.convertFloatToInt()
   return &domain.Repository{
-    ID:         domain.RepositoryID(dto.Id),
+    ID:         domain.RepositoryID(dto.Data["id"].(string)),
     Properties: properties,
     Type:       domain.TypeRepository,
   }
@@ -159,7 +164,7 @@ func (dto *repository3DTO) to() *domain.Repository {
 
 func (dto *repository3DTO) convertFloatToInt() domain.Properties {
   properties := make(domain.Properties)
-  for key, value := range dto.attributes {
+  for key, value := range dto.Data {
     if reflect.TypeOf(value).Kind() == reflect.Float64 {
       properties[key] = int(value.(float64))
     } else {
