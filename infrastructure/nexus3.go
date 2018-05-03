@@ -44,10 +44,12 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
   }
 
   jsonData, err := script.ExecuteWithStringPayload(StringID)
+
   if err != nil {
     return nil, err
   }
 
+  // Todo ParseRepositoryJson fertig stellen
   repository, err := client.parseRepositoryJson(jsonData)
 
   if err != nil {
@@ -79,7 +81,29 @@ func (client *httpNexus3APIClient) parseRepositoryJson(jsonData string) (*domain
 
 
 func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
-	return nil
+
+  createRepositoryScript := CREATE_REPOSITORY;
+  script,err := client.manager.Create("createRepository",createRepositoryScript)
+  if err != nil {
+    return err
+  }
+
+  jsonData,err := json.Marshal(repository.Properties)
+  if err != nil {
+    return errors.Wrap(err, "failed to marshal the json data")
+  }
+
+  readAbleJson:= string(jsonData)
+
+  fmt.Println(readAbleJson)
+
+  // Todo : Fehler obwohl es mit nexus-scripting funktioniert
+  _, err = script.ExecuteWithJSONPayload(readAbleJson)
+  if err != nil {
+    return err
+  }
+
+  return nil
 }
 
 func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
