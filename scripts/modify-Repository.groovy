@@ -12,7 +12,6 @@ if (args != "") {
   def name = getName(repo)
   def conf = createConfiguration(repo)
   def output = modifyRepository(name, conf)
-
   return output
 }
 
@@ -52,15 +51,15 @@ def createConfiguration(Repository repo){
   def attributes = repo.properties.get("attributes")
 
   if(recipeName.contains("proxy")){
-    attributes = putProxyAttribute(attributes,recipeName)
+    attributes = configureProxyAttributes(attributes,recipeName)
   }
 
   else if (recipeName.contains("group")){
-    attributes = putGroupAttribute(attributes)
+    attributes = configureGroupAttributes(attributes)
 
   }
   else if (recipeName.contains("hosted")){
-    attributes = putHostedAttribute(attributes,recipeName)
+    attributes = configureHostedAttributes(attributes,recipeName)
   }
 
   Configuration conf = new Configuration(
@@ -89,7 +88,7 @@ def getOnline(Repository repo){
   return online
 }
 
-def putGroupAttribute(Object attribute){
+def configureGroupAttributes(Object attribute){
 
   def attributes = attribute
   attributes.put("storage", attributes.get("storage").get(0))
@@ -97,7 +96,7 @@ def putGroupAttribute(Object attribute){
   return attributes
 }
 
-def putHostedAttribute(Object attribute, String recipeName){
+def configureHostedAttributes(Object attribute, String recipeName){
 
   def attributes = attribute
   attributes.put("storage", attributes.get("storage").get(0))
@@ -108,7 +107,7 @@ def putHostedAttribute(Object attribute, String recipeName){
   return attributes
 }
 
-def putProxyAttribute(Object attribute,String recipeName){
+def configureProxyAttributes(Object attribute, String recipeName){
 
   def attributes = attribute
   HashMap<String,Object> httpClient = attributes.get("httpclient")
