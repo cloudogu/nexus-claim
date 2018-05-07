@@ -2,8 +2,6 @@
 package infrastructure
 
 import (
-	"net/http"
-
 	"encoding/json"
 
 	"fmt"
@@ -14,21 +12,20 @@ import (
 	"strings"
 )
 
-// NewHTTPNexus3APIClient creates a new Nexus3APIClient
-func NewHTTPNexus3APIClient(url string, username string, password string) domain.NexusAPIClient {
+// NewNexus3APIClient creates a new Nexus3APIClient
+func NewNexus3APIClient(url string, username string, password string) domain.NexusAPIClient {
 	manager := manager.New(url, username, password)
-	return &httpNexus3APIClient{url, username, password, &http.Client{}, manager}
+	return &Nexus3APIClient{url, username, password, manager}
 }
 
-type httpNexus3APIClient struct {
+type Nexus3APIClient struct {
 	url        string
 	username   string
 	password   string
-	httpClient *http.Client
 	manager    *manager.Manager
 }
 
-func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
+func (client *Nexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 
 	readRepositoryScript := READ_REPOSITORY
 	StringID := string(id)
@@ -40,7 +37,6 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
 	fmt.Println("getting " + StringID)
 
 	jsonData, err := script.ExecuteWithStringPayload(StringID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +53,7 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
 
 }
 
-func (client *httpNexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
+func (client *Nexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
 
 	dto := newRepository3DTO()
 
@@ -70,7 +66,7 @@ func (client *httpNexus3APIClient) parseRepositoryJSON(jsonData string) (*domain
 	return dto.to(), nil
 }
 
-func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
+func (client *Nexus3APIClient) Create(repository domain.Repository) error {
 
 	createRepositoryScript := CREATE_REPOSITORY
 	script, err := client.manager.Create("createRepository", createRepositoryScript)
@@ -96,7 +92,7 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
 	return nil
 }
 
-func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
+func (client *Nexus3APIClient) Modify(repository domain.Repository) error {
 
 	modifyRepositoryScript := MODIFY_REPOSITORY
 	script, err := client.manager.Create("modifyRepository", modifyRepositoryScript)
@@ -122,7 +118,7 @@ func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
 	return nil
 }
 
-func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
+func (client *Nexus3APIClient) Remove(repository domain.Repository) error {
 
 	deleteRepositoryScript := DELETE_REPOSITORY
 	StringID := string(repository.ID)
@@ -133,15 +129,18 @@ func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
 
 	fmt.Println("deleting " + StringID)
 
-	_, err = script.ExecuteWithStringPayload(StringID)
+	output, err := script.ExecuteWithStringPayload(StringID)
 	if err != nil {
 		return err
 	}
+  if !(strings.Contains(output, "successfully")) {
+    return errors.Wrapf(err, "error: %s", output)
+  }
 
 	return nil
 }
 
-func (client *httpNexus3APIClient) isStatusNotFound(output string) bool {
+func (client *Nexus3APIClient) isStatusNotFound(output string) bool {
 	return strings.Contains(output, "404")
 }
 

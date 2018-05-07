@@ -7,6 +7,8 @@ def deleteRepository(String name) {
     return e
   }
 
+  return "successfully deleted " + name
+
 }
 
 if (args != "") {
