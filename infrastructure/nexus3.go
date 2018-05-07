@@ -48,7 +48,7 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
 		return nil, nil
 	}
 
-	repository, err := client.parseRepositoryJson(jsonData)
+	repository, err := client.parseRepositoryJSON(jsonData)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
 
 }
 
-func (client *httpNexus3APIClient) parseRepositoryJson(jsonData string) (*domain.Repository, error) {
+func (client *httpNexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
 
 	dto := newRepository3DTO()
 
@@ -80,12 +80,12 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
 
 	fmt.Println("creating " + repository.ID)
 
-	readAbleJson, err := repositoryToJson(repository)
+	readAbleJSON, err := repositoryToJSON(repository)
 	if err != nil {
 		return err
 	}
 
-	output, err := script.ExecuteWithStringPayload(readAbleJson)
+	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
 		return err
 	}
@@ -106,12 +106,12 @@ func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
 
 	fmt.Println("modifying " + repository.ID)
 
-	readAbleJson, err := repositoryToJson(repository)
+	readAbleJSON, err := repositoryToJSON(repository)
 	if err != nil {
 		return err
 	}
 
-	output, err := script.ExecuteWithStringPayload(readAbleJson)
+	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
 		return err
 	}
@@ -145,15 +145,15 @@ func (client *httpNexus3APIClient) isStatusNotFound(output string) bool {
 	return strings.Contains(output, "404")
 }
 
-func repositoryToJson(repository domain.Repository) (string, error) {
+func repositoryToJSON(repository domain.Repository) (string, error) {
 
 	jsonData, err := json.Marshal(repository.Properties)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to marshal the json data")
 	}
-	readAbleJson := string(jsonData)
+	readAbleJSON := string(jsonData)
 
-	return readAbleJson, nil
+	return readAbleJSON, nil
 }
 
 func newRepository3DTO() *repository3DTO {
