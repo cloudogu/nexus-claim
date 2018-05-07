@@ -55,8 +55,6 @@ func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id 
   }
 
   repository, err := client.parseRepositoryJson(jsonData)
-
-  fmt.Println(repository.Properties)
   if err != nil {
     return nil, err
   }
@@ -93,12 +91,15 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
     return err
   }
 
+  fmt.Println(readAbleJson)
+
   output, err := script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
-  fmt.Println(output)
-
+  if !strings.Contains(output,"successfully"){
+    return errors.Wrapf(err, "%s", output)
+  }
 
   return nil
 }

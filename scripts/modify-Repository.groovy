@@ -3,12 +3,59 @@ import org.sonatype.nexus.repository.config.Configuration
 import groovy.json.JsonSlurper
 
 if (args != "") {
+
+
   def repo = convertJsonFileToRepo(args)
   def name = getName(repo)
+
   def conf = createHostedConfiguration(repo)
+
   def output = modifyRepository(name, conf)
 
   return output
+}
+
+def modifyRepository(String repositoryID, Configuration configuration) {
+
+
+  repository.getRepositoryManager().get(repositoryID).stop()
+
+  try {
+    repository.getRepositoryManager().get(repositoryID).update(configuration)
+  }
+  catch (Exception e) {
+    return e
+  }
+  finally {
+    repository.getRepositoryManager().get(repositoryID).start()
+  }
+
+  return "successfully modified " + repositoryID
+}
+
+
+def createHostedConfiguration(Repository repo) {
+
+  def name = getName(repo)
+  def recipeName = getRecipeName(repo)
+  def online = getOnline(repo)
+
+  def attributes = repo.properties.get("attributes")
+  attributes.put("storage", attributes.get("storage").get(0))
+
+  Configuration conf = new Configuration(
+    repositoryName: name,
+    recipeName: recipeName,
+    online: online,
+    attributes: attributes
+  )
+
+  if (recipeName.contains("maven")) {
+    conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
+  }
+
+  return conf
+
 }
 
 
@@ -42,33 +89,7 @@ def convertJsonFileToRepo(String jsonData) {
   return repo
 }
 
-def modifyRepository(String repositoryID, Configuration configuration) {
-
-  try {
-    repository.getRepositoryManager().get(repositoryID).stop()
-  }
-  catch (Exception e){
-    return "cannot stop service " + e.toString()
-  }
-
-  try {
-    repository.getRepositoryManager().get(repositoryID).update(configuration)
-  }
-  catch (Exception e){
-    return "cannot update repository " + repositoryID + ". " + e.toString()
-  }
-
-  try {
-    repository.getRepositoryManager().get(repositoryID).start()
-  }
-  catch (Exception e){
-    return "cannot start service " + e.toString()
-  }
-
-  return "successfully modified " + repositoryID
-}
-
-def isRepositoryManagerStarted(){
+def isRepositoryManagerStarted() {
 
   try {
     repository.getRepositoryManager().start()
@@ -78,28 +99,3 @@ def isRepositoryManagerStarted(){
     return false
   }
 }
-
-def createHostedConfiguration(Repository repo) {
-
-  def name = getName(repo)
-  def recipeName = getRecipeName(repo)
-  def online = getOnline(repo)
-
-  def attributes = repo.properties.get("attributes")
-  attributes.put("storage", attributes.get("storage").get(0))
-
-  Configuration conf = new Configuration(
-    repositoryName: name,
-    recipeName: recipeName,
-    online: online,
-    attributes: attributes
-  )
-
-  if (recipeName.contains("maven")) {
-    conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
-  }
-
-  return conf
-
-}
-
