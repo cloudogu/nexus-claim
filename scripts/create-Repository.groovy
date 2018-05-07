@@ -69,6 +69,7 @@ def createHostedConfiguration(Repository repo){
     attributes: attributes
   )
 
+
   return conf
 }
 
@@ -90,7 +91,6 @@ def getOnline(Repository repo){
 def putGroupAttribute(Object attribute){
 
   def attributes = attribute
-
   attributes.put("storage", attributes.get("storage").get(0))
   attributes.put("group",attributes.get("group").get(0))
   return attributes
@@ -99,19 +99,16 @@ def putGroupAttribute(Object attribute){
 def putHostedAttribute(Object attribute, String recipeName){
 
   def attributes = attribute
-
   attributes.put("storage", attributes.get("storage").get(0))
-
   if (recipeName.contains("maven")){
-
     attributes.put("maven", attributes.get("maven").get(0))
   }
 
   return attributes
 }
 def putProxyAttribute(Object attribute,String recipeName){
-  def attributes = attribute
 
+  def attributes = attribute
   HashMap<String,Object> httpClient = attributes.get("httpclient")
   def connection = httpClient.get("connection").get(0)
   httpClient.put("connection",connection)
@@ -119,7 +116,6 @@ def putProxyAttribute(Object attribute,String recipeName){
   attributes.put("proxy",attributes.get("proxy").get(0))
   attributes.put("negativeCache",attributes.get("negativeCache").get(0))
   attributes.put("httpclient",httpClient)
-
   attributes.put("storage", attributes.get("storage").get(0))
 
   if (recipeName.contains("maven")){
