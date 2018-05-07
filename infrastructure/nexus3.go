@@ -44,26 +44,13 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 		return nil, nil
 	}
 
-	repository, err := client.parseRepositoryJSON(jsonData)
+	repository, err := client.JSONToRepository(jsonData)
 	if err != nil {
 		return nil, err
 	}
 
 	return repository, nil
 
-}
-
-func (client *nexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
-
-	dto := newRepository3DTO()
-
-	dto, err := dto.from(jsonData)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return dto.to(), nil
 }
 
 func (client *nexus3APIClient) Create(repository domain.Repository) error {
@@ -76,7 +63,7 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 
 	fmt.Println("creating " + repository.ID)
 
-	readAbleJSON, err := repositoryToJSON(repository)
+	readAbleJSON, err := client.repositoryToJSON(repository)
 	if err != nil {
 		return err
 	}
@@ -102,7 +89,7 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 
 	fmt.Println("modifying " + repository.ID)
 
-	readAbleJSON, err := repositoryToJSON(repository)
+	readAbleJSON, err := client.repositoryToJSON(repository)
 	if err != nil {
 		return err
 	}
@@ -144,7 +131,7 @@ func (client *nexus3APIClient) isStatusNotFound(output string) bool {
 	return strings.Contains(output, "404")
 }
 
-func repositoryToJSON(repository domain.Repository) (string, error) {
+func (client *nexus3APIClient) repositoryToJSON(repository domain.Repository) (string, error) {
 
 	jsonData, err := json.Marshal(repository.Properties)
 	if err != nil {
@@ -155,15 +142,25 @@ func repositoryToJSON(repository domain.Repository) (string, error) {
 	return readAbleJSON, nil
 }
 
-func newRepository3DTO() *repository3DTO {
-	return &repository3DTO{}
+func (client *nexus3APIClient) JSONToRepository(jsonData string) (*domain.Repository, error) {
+
+  dto := newNexus3RepositoryDTO()
+  dto, err := dto.from(jsonData)
+  if err != nil {
+    return nil, err
+  }
+  return dto.to(), nil
 }
 
-type repository3DTO struct {
+func newNexus3RepositoryDTO() *nexus3RepositoryDTO {
+	return &nexus3RepositoryDTO{}
+}
+
+type nexus3RepositoryDTO struct {
 	Data domain.Properties
 }
 
-func (dto *repository3DTO) from(jsonData string) (*repository3DTO, error) {
+func (dto *nexus3RepositoryDTO) from(jsonData string) (*nexus3RepositoryDTO, error) {
 
 	var jsonMap map[string]interface{}
 
@@ -178,7 +175,7 @@ func (dto *repository3DTO) from(jsonData string) (*repository3DTO, error) {
 	return dto, nil
 }
 
-func (dto *repository3DTO) to() *domain.Repository {
+func (dto *nexus3RepositoryDTO) to() *domain.Repository {
 	properties := dto.convertFloatToInt()
 	return &domain.Repository{
 		ID:         domain.RepositoryID(dto.Data["id"].(string)),
@@ -187,7 +184,7 @@ func (dto *repository3DTO) to() *domain.Repository {
 	}
 }
 
-func (dto *repository3DTO) convertFloatToInt() domain.Properties {
+func (dto *nexus3RepositoryDTO) convertFloatToInt() domain.Properties {
 	properties := make(domain.Properties)
 	for key, value := range dto.Data {
 		if reflect.TypeOf(value).Kind() == reflect.Float64 {
