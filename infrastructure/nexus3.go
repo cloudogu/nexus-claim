@@ -92,9 +92,8 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
   if err != nil {
     return err
   }
-
   if !(strings.Contains(output,"successfully")){
-    return errors.Wrapf(err, "error: %s", output)
+    return errors.New(output)
   }
 
   return nil

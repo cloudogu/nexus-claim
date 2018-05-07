@@ -2,19 +2,15 @@
 repository "testGroup" {
   name = "testGroup"
   online = true
-  recipeName = "maven2-group"
-
+  recipeName = "bower-group"
   attributes = {
       group = {
         memberNames = ["maven-public","maven-central"]
       }
-
     storage = {
       blobStoreName = "default"
     }
-
   }
-
   _state = "present"
 }
 
@@ -43,14 +39,9 @@ repository "testProxy" {
       blobStoreName = "default"
       strictContentTypeValidation = false
     }
-    maven = {
-      versionPolicy = "MIXED"
-      layoutPolicy = "STRICT"
-    }
-
   }
 
-  _state = "present"
+  _state = "absent"
 }
 
 
@@ -65,8 +56,8 @@ repository "testHosted" {
       strictContentTypeValidation = false
     }
     maven = {
-      versionPolicy = "MIXED"
-      layoutPolicy = "STRICT"
+      versionPolicy = "RELEASE"
+      layoutPolicy = "PERMISSIVE"
     }
   }
   _state = "present"
