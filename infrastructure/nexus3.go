@@ -1,9 +1,6 @@
 //go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 package infrastructure
 
-// -s http://localhost:8082/nexus -u admin -p admin123 plan -i ./groovy/nexus-initial-example.hcl -o nexus-initial-example.json
-// -s http://localhost:8081 -u admin -p admin123 plan -i ./groovy/nexus3-initial-example.hcl -o nexus3-initial-example.json
-
 
 import (
 
@@ -91,16 +88,13 @@ func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
     return err
   }
 
-  fmt.Println(readAbleJson)
-
   output, err := script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
-  fmt.Println(output)
 
-  if !strings.Contains(output,"successfully"){
-    return errors.Wrapf(err, "%s", output)
+  if !(strings.Contains(output,"successfully")){
+    return errors.Wrapf(err, "error: %s", output)
   }
 
   return nil
@@ -121,13 +115,14 @@ func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
     return err
   }
 
-  fmt.Println(readAbleJson)
 
   output, err := script.ExecuteWithStringPayload(readAbleJson)
   if err != nil {
     return err
   }
-  fmt.Println(output)
+  if !(strings.Contains(output,"successfully")){
+    return errors.Wrapf(err, "error: %s", output)
+  }
 
   return nil
 }

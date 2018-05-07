@@ -3,9 +3,6 @@ import org.sonatype.nexus.blobstore.api.BlobStoreManager
 import org.sonatype.nexus.repository.config.Configuration
 import org.sonatype.nexus.repository.storage.WritePolicy
 
-/*
-  WORK IN PROGRESS
- */
 class Repository {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
 }
@@ -13,15 +10,15 @@ class Repository {
 if (args != "") {
 
   def rep = convertJsonFileToRepo(args)
-  def newRepo = createRepository(rep)
+  def output = createRepository(rep)
 
-  return newRepo
+  return output
 
 }
 
 def createRepository(Repository repo) {
 
-  def conf = createHostedConfiguration(repo)
+  def conf = createConfiguration(repo)
 
   try {
     repository.createRepository(conf)
@@ -43,7 +40,7 @@ def convertJsonFileToRepo(String jsonData) {
   return repo
 }
 
-def createHostedConfiguration(Repository repo){
+def createConfiguration(Repository repo){
 
   def name = getName(repo)
   def recipeName = getRecipeName(repo)

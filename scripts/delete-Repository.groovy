@@ -11,6 +11,8 @@ def deleteRepository(String name) {
 
 if (args != "") {
 
-  deleteRepository(args)
+  def output = deleteRepository(args)
+
+  return output
 }
 
