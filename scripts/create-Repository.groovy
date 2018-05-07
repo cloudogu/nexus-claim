@@ -23,12 +23,7 @@ def convertJsonFileToRepo(String jsonData) {
 
 def createRepository(Repository repo) {
 
-  Configuration conf = new Configuration()
-
-  if (getRecipeName(repo).contains("hosted")){
-
-    conf = createHostedConfiguration(repo)
-  }
+  def conf = createHostedConfiguration(repo)
 
   try {
     repository.createRepository(conf)
@@ -56,7 +51,7 @@ def createHostedConfiguration(Repository repo){
   )
 
   if (recipeName.contains("maven")){
-    conf.attributes.maven = repo.getProperties().get("attributes").get("maven")
+    conf.attributes.maven = attributes.get("maven").get(0)
   }
 
   return conf
