@@ -12,20 +12,20 @@ import (
 	"strings"
 )
 
-// NewNexus3APIClient creates a new Nexus3APIClient
+// NewNexus3APIClient creates a new nexus3APIClient
 func NewNexus3APIClient(url string, username string, password string) domain.NexusAPIClient {
-	manager := manager.New(url, username, password)
-	return &Nexus3APIClient{url, username, password, manager}
+	clientManager := manager.New(url, username, password)
+	return &nexus3APIClient{url, username, password, clientManager}
 }
 
-type Nexus3APIClient struct {
+type nexus3APIClient struct {
 	url        string
 	username   string
 	password   string
 	manager    *manager.Manager
 }
 
-func (client *Nexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
+func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 
 	readRepositoryScript := READ_REPOSITORY
 	StringID := string(id)
@@ -53,7 +53,7 @@ func (client *Nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 
 }
 
-func (client *Nexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
+func (client *nexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Repository, error) {
 
 	dto := newRepository3DTO()
 
@@ -66,7 +66,7 @@ func (client *Nexus3APIClient) parseRepositoryJSON(jsonData string) (*domain.Rep
 	return dto.to(), nil
 }
 
-func (client *Nexus3APIClient) Create(repository domain.Repository) error {
+func (client *nexus3APIClient) Create(repository domain.Repository) error {
 
 	createRepositoryScript := CREATE_REPOSITORY
 	script, err := client.manager.Create("createRepository", createRepositoryScript)
@@ -92,7 +92,7 @@ func (client *Nexus3APIClient) Create(repository domain.Repository) error {
 	return nil
 }
 
-func (client *Nexus3APIClient) Modify(repository domain.Repository) error {
+func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 
 	modifyRepositoryScript := MODIFY_REPOSITORY
 	script, err := client.manager.Create("modifyRepository", modifyRepositoryScript)
@@ -118,7 +118,7 @@ func (client *Nexus3APIClient) Modify(repository domain.Repository) error {
 	return nil
 }
 
-func (client *Nexus3APIClient) Remove(repository domain.Repository) error {
+func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 
 	deleteRepositoryScript := DELETE_REPOSITORY
 	StringID := string(repository.ID)
@@ -140,7 +140,7 @@ func (client *Nexus3APIClient) Remove(repository domain.Repository) error {
 	return nil
 }
 
-func (client *Nexus3APIClient) isStatusNotFound(output string) bool {
+func (client *nexus3APIClient) isStatusNotFound(output string) bool {
 	return strings.Contains(output, "404")
 }
 
