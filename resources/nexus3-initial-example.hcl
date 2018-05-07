@@ -1,7 +1,3 @@
-repository "thirdparty" {
-  name = "Third Party"
-  _state = "present"
-}
 
 repository "testGroup" {
   name = "testGroup"
@@ -10,7 +6,7 @@ repository "testGroup" {
 
   attributes = {
       group = {
-        memberNames = ["thirdparty","maven-central"]
+        memberNames = ["maven-public","maven-central"]
       }
 
     storage = {
@@ -21,6 +17,7 @@ repository "testGroup" {
 
   _state = "present"
 }
+
 repository "testProxy" {
   name = "testProxy"
   online = true
@@ -56,10 +53,6 @@ repository "testProxy" {
   _state = "present"
 }
 
-repository "deleteMe" {
-  name = "deleteMe"
-  _state = "absent"
-}
 
 repository "testHosted" {
   name = "testHosted"
