@@ -34,14 +34,36 @@ def createRepository(Repository repo) {
   return "successfully created " + getName(repo)
 }
 
+
 def createHostedConfiguration(Repository repo){
 
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
   def online = getOnline(repo)
-
   def attributes = repo.properties.get("attributes")
-  attributes.put("storage",attributes.get("storage").get(0))
+
+  if(recipeName.contains("proxy")){
+
+    HashMap<String,Object> httpClient = attributes.get("httpclient")
+    def connection = httpClient.get("connection").get(0)
+    httpClient.put("connection",connection)
+
+
+    attributes.put("proxy",attributes.get("proxy").get(0))
+    attributes.put("negativeCache",attributes.get("negativeCache").get(0))
+    attributes.put("httpclient",httpClient)
+
+    attributes.put("storage", attributes.get("storage").get(0))
+  }
+
+  else if (recipeName.contains("hosted")){
+    attributes.put("storage", attributes.get("storage").get(0))
+  }
+
+  if (recipeName.contains("maven")){
+
+    attributes.put("maven", attributes.get("maven").get(0))
+  }
 
   Configuration conf = new Configuration(
     repositoryName: name,
@@ -49,10 +71,6 @@ def createHostedConfiguration(Repository repo){
     online: online,
     attributes: attributes
   )
-
-  if (recipeName.contains("maven")){
-    conf.attributes.maven = attributes.get("maven").get(0)
-  }
 
   return conf
 
