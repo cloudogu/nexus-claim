@@ -91,6 +91,7 @@ func (app *Application) GlobalFlags() []cli.Flag {
 }
 
 func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClient {
+
 	if app.nexusAPIClient != nil {
 		return app.nexusAPIClient
 	} else if c.Bool("nexus2"){
