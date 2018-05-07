@@ -10,15 +10,13 @@ class Repository {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
 }
 
-def convertJsonFileToRepo(String jsonData) {
+if (args != "") {
 
-  def inputJson = new JsonSlurper().parseText(jsonData)
-  Repository repo = new Repository()
-  inputJson.each {
-    repo.properties.put(it.key, it.value)
-  }
+  def rep = convertJsonFileToRepo(args)
+  def newRepo = createRepository(rep)
 
-  return repo
+  return newRepo
+
 }
 
 def createRepository(Repository repo) {
@@ -34,6 +32,16 @@ def createRepository(Repository repo) {
   return "successfully created " + getName(repo)
 }
 
+def convertJsonFileToRepo(String jsonData) {
+
+  def inputJson = new JsonSlurper().parseText(jsonData)
+  Repository repo = new Repository()
+  inputJson.each {
+    repo.properties.put(it.key, it.value)
+  }
+
+  return repo
+}
 
 def createHostedConfiguration(Repository repo){
 
@@ -43,26 +51,15 @@ def createHostedConfiguration(Repository repo){
   def attributes = repo.properties.get("attributes")
 
   if(recipeName.contains("proxy")){
-
-    HashMap<String,Object> httpClient = attributes.get("httpclient")
-    def connection = httpClient.get("connection").get(0)
-    httpClient.put("connection",connection)
-
-
-    attributes.put("proxy",attributes.get("proxy").get(0))
-    attributes.put("negativeCache",attributes.get("negativeCache").get(0))
-    attributes.put("httpclient",httpClient)
-
-    attributes.put("storage", attributes.get("storage").get(0))
+    attributes = putProxyAttribute(attributes,recipeName)
   }
 
+  else if (recipeName.contains("group")){
+    attributes = putGroupAttribute(attributes)
+
+  }
   else if (recipeName.contains("hosted")){
-    attributes.put("storage", attributes.get("storage").get(0))
-  }
-
-  if (recipeName.contains("maven")){
-
-    attributes.put("maven", attributes.get("maven").get(0))
+    attributes = putHostedAttribute(attributes,recipeName)
   }
 
   Configuration conf = new Configuration(
@@ -73,7 +70,6 @@ def createHostedConfiguration(Repository repo){
   )
 
   return conf
-
 }
 
 def getName(Repository repo){
@@ -91,11 +87,44 @@ def getOnline(Repository repo){
   return online
 }
 
-if (args != "") {
+def putGroupAttribute(Object attribute){
 
-  def rep = convertJsonFileToRepo(args)
-  def newRepo = createRepository(rep)
+  def attributes = attribute
 
-  return newRepo
+  attributes.put("storage", attributes.get("storage").get(0))
+  attributes.put("group",attributes.get("group").get(0))
+  return attributes
+}
 
+def putHostedAttribute(Object attribute, String recipeName){
+
+  def attributes = attribute
+
+  attributes.put("storage", attributes.get("storage").get(0))
+
+  if (recipeName.contains("maven")){
+
+    attributes.put("maven", attributes.get("maven").get(0))
+  }
+
+  return attributes
+}
+def putProxyAttribute(Object attribute,String recipeName){
+  def attributes = attribute
+
+  HashMap<String,Object> httpClient = attributes.get("httpclient")
+  def connection = httpClient.get("connection").get(0)
+  httpClient.put("connection",connection)
+
+  attributes.put("proxy",attributes.get("proxy").get(0))
+  attributes.put("negativeCache",attributes.get("negativeCache").get(0))
+  attributes.put("httpclient",httpClient)
+
+  attributes.put("storage", attributes.get("storage").get(0))
+
+  if (recipeName.contains("maven")){
+    attributes.put("maven", attributes.get("maven").get(0))
+  }
+
+  return attributes
 }
