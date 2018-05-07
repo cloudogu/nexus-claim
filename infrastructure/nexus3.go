@@ -1,26 +1,23 @@
 //go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 package infrastructure
 
-
 import (
-
 	"net/http"
 
 	"encoding/json"
 
+	"fmt"
 	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/cloudogu/nexus-scripting/manager"
 	"github.com/pkg/errors"
-  "github.com/cloudogu/nexus-scripting/manager"
-  "fmt"
-  "reflect"
-  "strings"
+	"reflect"
+	"strings"
 )
-
 
 // NewHTTPNexus3APIClient creates a new Nexus3APIClient
 func NewHTTPNexus3APIClient(url string, username string, password string) domain.NexusAPIClient {
-  manager := manager.New(url,username,password)
-  return &httpNexus3APIClient{url, username, password, &http.Client{},manager}
+	manager := manager.New(url, username, password)
+	return &httpNexus3APIClient{url, username, password, &http.Client{}, manager}
 }
 
 type httpNexus3APIClient struct {
@@ -33,173 +30,172 @@ type httpNexus3APIClient struct {
 
 func (client *httpNexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 
-  readRepositoryScript := READ_REPOSITORY;
-  StringID := string(id)
-  script,err := client.manager.Create("readRepository",readRepositoryScript)
+	readRepositoryScript := READ_REPOSITORY
+	StringID := string(id)
+	script, err := client.manager.Create("readRepository", readRepositoryScript)
+	if err != nil {
+		return nil, err
+	}
 
-  if err != nil {
-    return nil, err
-  }
+	fmt.Println("getting " + StringID)
 
-  fmt.Println("getting " + StringID)
+	jsonData, err := script.ExecuteWithStringPayload(StringID)
 
-  jsonData, err := script.ExecuteWithStringPayload(StringID)
-  if err != nil {
-    return nil, err
-  }
-  if client.isStatusNotFound(jsonData){
-    return nil, nil
-  }
+	if err != nil {
+		return nil, err
+	}
+	if client.isStatusNotFound(jsonData) {
+		return nil, nil
+	}
 
-  repository, err := client.parseRepositoryJson(jsonData)
-  if err != nil {
-    return nil, err
-  }
+	repository, err := client.parseRepositoryJson(jsonData)
+	if err != nil {
+		return nil, err
+	}
 
-  return repository,nil
+	return repository, nil
 
 }
 
 func (client *httpNexus3APIClient) parseRepositoryJson(jsonData string) (*domain.Repository, error) {
 
-  dto := newRepository3DTO()
+	dto := newRepository3DTO()
 
-  dto,err := dto.from(jsonData)
+	dto, err := dto.from(jsonData)
 
-  if err != nil {
-    return nil,err
-  }
+	if err != nil {
+		return nil, err
+	}
 
 	return dto.to(), nil
 }
 
 func (client *httpNexus3APIClient) Create(repository domain.Repository) error {
 
-  createRepositoryScript := CREATE_REPOSITORY;
-  script,err := client.manager.Create("createRepository",createRepositoryScript)
-  if err != nil {
-    return err
-  }
+	createRepositoryScript := CREATE_REPOSITORY
+	script, err := client.manager.Create("createRepository", createRepositoryScript)
+	if err != nil {
+		return err
+	}
 
-  fmt.Println("creating " + repository.ID)
+	fmt.Println("creating " + repository.ID)
 
-  readAbleJson, err := repositoryToJson(repository)
-  if err != nil {
-    return err
-  }
+	readAbleJson, err := repositoryToJson(repository)
+	if err != nil {
+		return err
+	}
 
-  output, err := script.ExecuteWithStringPayload(readAbleJson)
-  if err != nil {
-    return err
-  }
-  if !(strings.Contains(output,"successfully")){
-    return errors.New(output)
-  }
+	output, err := script.ExecuteWithStringPayload(readAbleJson)
+	if err != nil {
+		return err
+	}
+	if !(strings.Contains(output, "successfully")) {
+		return errors.New(output)
+	}
 
-  return nil
+	return nil
 }
 
 func (client *httpNexus3APIClient) Modify(repository domain.Repository) error {
 
-  modifyRepositoryScript := MODIFY_REPOSITORY
-  script, err := client.manager.Create("modifyRepository",modifyRepositoryScript)
-  if err != nil {
-    return err
-  }
+	modifyRepositoryScript := MODIFY_REPOSITORY
+	script, err := client.manager.Create("modifyRepository", modifyRepositoryScript)
+	if err != nil {
+		return err
+	}
 
-  fmt.Println("modifying " + repository.ID)
+	fmt.Println("modifying " + repository.ID)
 
-  readAbleJson, err := repositoryToJson(repository)
-  if err != nil {
-    return err
-  }
+	readAbleJson, err := repositoryToJson(repository)
+	if err != nil {
+		return err
+	}
 
+	output, err := script.ExecuteWithStringPayload(readAbleJson)
+	if err != nil {
+		return err
+	}
+	if !(strings.Contains(output, "successfully")) {
+		return errors.Wrapf(err, "error: %s", output)
+	}
 
-  output, err := script.ExecuteWithStringPayload(readAbleJson)
-  if err != nil {
-    return err
-  }
-  if !(strings.Contains(output,"successfully")){
-    return errors.Wrapf(err, "error: %s", output)
-  }
-
-  return nil
+	return nil
 }
 
 func (client *httpNexus3APIClient) Remove(repository domain.Repository) error {
-  
-  deleteRepositoryScript := DELETE_REPOSITORY;
-  StringID := string(repository.ID)
-  script,err := client.manager.Create("deleteRepository",deleteRepositoryScript)
-  if err != nil {
-    return err
-  }
 
-  fmt.Println("deleting " + StringID)
+	deleteRepositoryScript := DELETE_REPOSITORY
+	StringID := string(repository.ID)
+	script, err := client.manager.Create("deleteRepository", deleteRepositoryScript)
+	if err != nil {
+		return err
+	}
 
-  _, err = script.ExecuteWithStringPayload(StringID)
-  if err != nil {
-    return err
-  }
+	fmt.Println("deleting " + StringID)
 
-  return nil
+	_, err = script.ExecuteWithStringPayload(StringID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (client *httpNexus3APIClient) isStatusNotFound(output string) bool {
-  return strings.Contains(output,"404")
+	return strings.Contains(output, "404")
 }
 
-func repositoryToJson(repository domain.Repository) (string, error){
-  
-  jsonData,err := json.Marshal(repository.Properties)
-  if err != nil {
-    return "", errors.Wrap(err, "failed to marshal the json data")
-  }
-  readAbleJson:= string(jsonData)
-  
-  return readAbleJson,nil
+func repositoryToJson(repository domain.Repository) (string, error) {
+
+	jsonData, err := json.Marshal(repository.Properties)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to marshal the json data")
+	}
+	readAbleJson := string(jsonData)
+
+	return readAbleJson, nil
 }
 
 func newRepository3DTO() *repository3DTO {
-  return &repository3DTO{}
+	return &repository3DTO{}
 }
 
 type repository3DTO struct {
-  Data domain.Properties
+	Data domain.Properties
 }
 
-func (dto *repository3DTO) from(jsonData string) (*repository3DTO,error) {
+func (dto *repository3DTO) from(jsonData string) (*repository3DTO, error) {
 
-  var jsonMap map[string]interface{}
+	var jsonMap map[string]interface{}
 
-  err := json.Unmarshal([]byte(jsonData),&jsonMap)
-  if err != nil {
-    return nil,err
-  }
+	err := json.Unmarshal([]byte(jsonData), &jsonMap)
+	if err != nil {
+		return nil, err
+	}
 
-  dto.Data = jsonMap
-  dto.Data["id"] = jsonMap["id"].(string)
+	dto.Data = jsonMap
+	dto.Data["id"] = jsonMap["id"].(string)
 
-  return dto,nil
+	return dto, nil
 }
 
 func (dto *repository3DTO) to() *domain.Repository {
-  properties := dto.convertFloatToInt()
-  return &domain.Repository{
-    ID:         domain.RepositoryID(dto.Data["id"].(string)),
-    Properties: properties,
-    Type:       domain.TypeRepository,
-  }
+	properties := dto.convertFloatToInt()
+	return &domain.Repository{
+		ID:         domain.RepositoryID(dto.Data["id"].(string)),
+		Properties: properties,
+		Type:       domain.TypeRepository,
+	}
 }
 
 func (dto *repository3DTO) convertFloatToInt() domain.Properties {
-  properties := make(domain.Properties)
-  for key, value := range dto.Data {
-    if reflect.TypeOf(value).Kind() == reflect.Float64 {
-      properties[key] = int(value.(float64))
-    } else {
-      properties[key] = value
-    }
-  }
-  return properties
+	properties := make(domain.Properties)
+	for key, value := range dto.Data {
+		if reflect.TypeOf(value).Kind() == reflect.Float64 {
+			properties[key] = int(value.(float64))
+		} else {
+			properties[key] = value
+		}
+	}
+	return properties
 }
