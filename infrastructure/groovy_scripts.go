@@ -29,7 +29,8 @@ def createRepository(Repository repo) {
   catch (Exception e){
     return e
   }
-  return "successfully created " + getName(repo)
+
+  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {
@@ -133,9 +134,7 @@ const DELETE_REPOSITORY = `def deleteRepository(String name) {
   catch (Exception e){
     return e
   }
-
-  return "successfully deleted " + name
-
+  return null
 }
 
 if (args != "") {
@@ -177,7 +176,7 @@ def modifyRepository(String repositoryID, Configuration configuration) {
     repository.getRepositoryManager().get(repositoryID).start()
   }
 
-  return "successfully modified " + repositoryID
+  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {

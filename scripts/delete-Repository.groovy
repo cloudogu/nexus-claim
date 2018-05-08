@@ -6,9 +6,7 @@ def deleteRepository(String name) {
   catch (Exception e){
     return e
   }
-
-  return "successfully deleted " + name
-
+  return null
 }
 
 if (args != "") {

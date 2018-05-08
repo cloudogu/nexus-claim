@@ -67,12 +67,11 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
 		return err
 	}
-	if !(strings.Contains(output, "successfully")) {
+	if strings.Contains(output, "exception") {
 		return errors.New(output)
 	}
 
@@ -98,7 +97,7 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-	if !(strings.Contains(output, "successfully")) {
+	if strings.Contains(output, "exception") {
 		return errors.Wrapf(err, "error: %s", output)
 	}
 
@@ -120,7 +119,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-  if !(strings.Contains(output, "successfully")) {
+  if strings.Contains(output, "exception") {
     return errors.Wrapf(err, "error: %s", output)
   }
 

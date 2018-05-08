@@ -29,7 +29,7 @@ def modifyRepository(String repositoryID, Configuration configuration) {
     repository.getRepositoryManager().get(repositoryID).start()
   }
 
-  return "successfully modified " + repositoryID
+  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {
