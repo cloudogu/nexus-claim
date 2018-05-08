@@ -1,0 +1,4 @@
+{
+  "name": "readRepository",
+  "result": "{\"format\":\"maven2\",\"id\":\"testRepo\",\"type\":\"hosted\"}"
+}

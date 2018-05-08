@@ -163,7 +163,6 @@ type nexus3RepositoryDTO struct {
 func (dto *nexus3RepositoryDTO) from(jsonData string) (*nexus3RepositoryDTO, error) {
 
 	var jsonMap map[string]interface{}
-
 	err := json.Unmarshal([]byte(jsonData), &jsonMap)
 	if err != nil {
 		return nil, err
