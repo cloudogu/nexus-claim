@@ -26,7 +26,8 @@ def createRepository(Repository repo) {
   catch (Exception e){
     return e
   }
-  return "successfully created " + getName(repo)
+
+  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {

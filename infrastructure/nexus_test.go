@@ -17,7 +17,7 @@ import (
 )
 
 func TestHttpNexusAPIClient_Get(t *testing.T) {
-	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
+	server := servce(t, "/service/local/repositories/test-repo", "simpleAnswerFromReadRepository.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -43,7 +43,7 @@ func TestHttpNexusAPIClient_GetGroup(t *testing.T) {
 }
 
 func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
-	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
+	server := servce(t, "/service/local/repositories/test-repo", "simpleAnswerFromReadRepository.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
