@@ -67,7 +67,7 @@ func (app *Application) GlobalFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:   "server, s",
-			Value:  "http://localhost:8081/nexus",
+			Value:  "http://localhost:8081",
 			Usage:  "Url to the nexus server",
 			EnvVar: "NEXUS_SERVER",
 		},
