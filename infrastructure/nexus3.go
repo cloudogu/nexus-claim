@@ -4,7 +4,6 @@ package infrastructure
 import (
 	"encoding/json"
 
-	"fmt"
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/cloudogu/nexus-scripting/manager"
 	"github.com/pkg/errors"
@@ -34,8 +33,6 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 		return nil, err
 	}
 
-	fmt.Println("getting " + StringID)
-
 	jsonData, err := script.ExecuteWithStringPayload(StringID)
 	if err != nil {
 		return nil, err
@@ -61,8 +58,6 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 		return err
 	}
 
-	fmt.Println("creating " + repository.ID)
-
 	readAbleJSON, err := client.repositoryToJSON(repository)
 	if err != nil {
 		return err
@@ -85,8 +80,6 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("modifying " + repository.ID)
 
 	readAbleJSON, err := client.repositoryToJSON(repository)
 	if err != nil {
@@ -112,9 +105,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("deleting " + StringID)
-
+	
 	output, err := script.ExecuteWithStringPayload(StringID)
 	if err != nil {
 		return err
