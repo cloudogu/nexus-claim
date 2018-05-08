@@ -3,10 +3,10 @@
 Define your [Sonatype Nexus](http://www.sonatype.org/nexus/) repository structure as code.
 
 
-## Example uses of nexus-claim
-`./nexus-claim -s http://localhost:8081 -u admin -p admin123 plan -i resources/nexus3/nexus3-initial-example.hcl -o resources/nexus3/nexus3-initial-example.json` 
+## Example uses of nexus-claim on nexus 3
+`./nexus-claim plan -i resources/nexus3/nexus3-initial-example.hcl -o resources/nexus3/nexus3-initial-example.json` 
 
-`./nexus-claim -s http://localhost:8081 -u admin -p admin123 apply -i resources/nexus3/nexus3-initial-example.json  `
+`./nexus-claim apply -i resources/nexus3/nexus3-initial-example.json  `
  
 ## Example .hcl for nexus 3
 ```hcl
