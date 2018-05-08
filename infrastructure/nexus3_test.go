@@ -85,7 +85,7 @@ func serveCreateRepository(t *testing. T, filename string) *httptest.Server{
     }
     if fullPath == "POST /service/rest/v1/script/createRepository/run"{
       w.WriteHeader(200)
-      bytes, err := ioutil.ReadFile("resources/nexus3/" + filename)
+      bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
       require.Nil(t, err)
       w.Write(bytes)
       return
@@ -108,7 +108,7 @@ func servceReadRepository(t *testing.T, filename string) *httptest.Server {
       return
     } else if fullPath == "POST /service/rest/v1/script/readRepository/run"{
       w.WriteHeader(200)
-      bytes, err := ioutil.ReadFile("resources/nexus3/" + filename)
+      bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
       require.Nil(t, err)
       w.Write(bytes)
       return
@@ -133,7 +133,7 @@ func serveDeleteRepository(t *testing. T, filename string) *httptest.Server{
     }
     if fullPath == "POST /service/rest/v1/script/deleteRepository/run"{
       w.WriteHeader(200)
-      bytes, err := ioutil.ReadFile("resources/nexus3/" + filename)
+      bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
       require.Nil(t, err)
       w.Write(bytes)
       return
@@ -156,7 +156,7 @@ func serveModifyRepository(t *testing. T, filename string) *httptest.Server{
     }
     if fullPath == "POST /service/rest/v1/script/modifyRepository/run"{
       w.WriteHeader(200)
-      bytes, err := ioutil.ReadFile("resources/nexus3/" + filename)
+      bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
       require.Nil(t, err)
       w.Write(bytes)
       return
