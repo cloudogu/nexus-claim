@@ -145,3 +145,5 @@ Temporary Items
 dist
 .tmp
 .idea
+
+build/tmp
