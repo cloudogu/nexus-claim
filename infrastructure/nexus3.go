@@ -27,6 +27,7 @@ type nexus3APIClient struct {
 func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 
 	stringID := string(id)
+
 	script, err := client.manager.Create("readRepository", READ_REPOSITORY)
 	if err != nil {
 		return nil, err
@@ -52,12 +53,13 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 func (client *nexus3APIClient) Create(repository domain.Repository) error {
 
 	script, err := client.manager.Create("createRepository", CREATE_REPOSITORY)
+
 	if err != nil {
 		return err
 	}
 
 	readAbleJSON, err := client.repositoryToJSON(repository)
-	if err != nil {
+  if err != nil {
 		return err
 	}
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
@@ -79,7 +81,7 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 	}
 
 	readAbleJSON, err := client.repositoryToJSON(repository)
-	if err != nil {
+  if err != nil {
 		return err
 	}
 
@@ -101,7 +103,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 	if err != nil {
 		return err
 	}
-	
+
 	output, err := script.ExecuteWithStringPayload(stringID)
 	if err != nil {
 		return err
@@ -114,7 +116,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 }
 
 func (client *nexus3APIClient) isStatusNotFound(output string) bool {
-	return output == "404: no repository found"
+	return strings.Contains(output,"404: no repository found")
 }
 
 func (client *nexus3APIClient) repositoryToJSON(repository domain.Repository) (string, error) {
