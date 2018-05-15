@@ -26,14 +26,13 @@ type nexus3APIClient struct {
 
 func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id domain.RepositoryID) (*domain.Repository, error) {
 
-	readRepositoryScript := READ_REPOSITORY
-	StringID := string(id)
-	script, err := client.manager.Create("readRepository", readRepositoryScript)
+	stringID := string(id)
+	script, err := client.manager.Create("readRepository", READ_REPOSITORY)
 	if err != nil {
 		return nil, err
 	}
 
-	jsonData, err := script.ExecuteWithStringPayload(StringID)
+	jsonData, err := script.ExecuteWithStringPayload(stringID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +51,7 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 
 func (client *nexus3APIClient) Create(repository domain.Repository) error {
 
-	createRepositoryScript := CREATE_REPOSITORY
-	script, err := client.manager.Create("createRepository", createRepositoryScript)
+	script, err := client.manager.Create("createRepository", CREATE_REPOSITORY)
 	if err != nil {
 		return err
 	}
@@ -75,8 +73,7 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 
 func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 
-	modifyRepositoryScript := MODIFY_REPOSITORY
-	script, err := client.manager.Create("modifyRepository", modifyRepositoryScript)
+	script, err := client.manager.Create("modifyRepository", MODIFY_REPOSITORY)
 	if err != nil {
 		return err
 	}
@@ -99,14 +96,13 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 
 func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 
-	deleteRepositoryScript := DELETE_REPOSITORY
-	StringID := string(repository.ID)
-	script, err := client.manager.Create("deleteRepository", deleteRepositoryScript)
+  stringID := string(repository.ID)
+	script, err := client.manager.Create("deleteRepository", DELETE_REPOSITORY)
 	if err != nil {
 		return err
 	}
 	
-	output, err := script.ExecuteWithStringPayload(StringID)
+	output, err := script.ExecuteWithStringPayload(stringID)
 	if err != nil {
 		return err
 	}
@@ -118,7 +114,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 }
 
 func (client *nexus3APIClient) isStatusNotFound(output string) bool {
-	return strings.Contains(output, "404")
+	return output == "404: no repository found"
 }
 
 func (client *nexus3APIClient) repositoryToJSON(repository domain.Repository) (string, error) {
