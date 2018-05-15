@@ -134,7 +134,7 @@ func (client *nexus3APIClient) JSONToRepository(jsonData string) (*domain.Reposi
   dto := newNexus3RepositoryDTO()
   dto, err := dto.from(jsonData)
   if err != nil {
-    return nil, errors.Wrapf(err,"Error occured during parsing JSON data into a Nexus3DPO")
+    return nil, errors.Wrap(err,"Error occured during parsing JSON data into a Nexus3DPO")
   }
   return dto.to(), nil
 }
