@@ -142,7 +142,6 @@ func serveCreateRepository(t *testing.T, filename string) *httptest.Server {
 			w.Write(bytes)
 			return
 		}
-		w.WriteHeader(404)
 
 	}))
 }
@@ -168,7 +167,6 @@ func servceReadRepository(t *testing.T, filename string) *httptest.Server {
 			return
 		}
 
-		w.WriteHeader(404)
 	}))
 }
 
@@ -190,7 +188,6 @@ func serveDeleteRepository(t *testing.T, filename string) *httptest.Server {
 			w.Write(bytes)
 			return
 		}
-		w.WriteHeader(404)
 
 	}))
 }
@@ -213,7 +210,6 @@ func serveModifyRepository(t *testing.T, filename string) *httptest.Server {
 			w.Write(bytes)
 			return
 		}
-		w.WriteHeader(404)
 
 	}))
 }
