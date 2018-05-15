@@ -5,8 +5,11 @@ Define your [Sonatype Nexus](http://www.sonatype.org/nexus/) repository structur
 
 ## Example uses of nexus-claim on nexus 3
 `./nexus-claim plan -i resources/nexus3/nexus3-initial-example.hcl -o resources/nexus3/nexus3-initial-example.json` 
-
 `./nexus-claim apply -i resources/nexus3/nexus3-initial-example.json  `
+
+## Things to consider for .hcl of nexus 3
+- `repository "xxx"` should be the same as `name = "xxx"`
+- on maven2-hosted- and maven2-proxy-repository there must be a maven sector in addition(with versionPolicy and writePolicy) 
  
 ## Example .hcl for nexus 3
 ```hcl
@@ -51,9 +54,13 @@ repository "testProxy" {
       blobStoreName = "default"
       strictContentTypeValidation = false
     }
+    maven = {
+      versionPolicy = "RELEASE"
+      layoutPolicy = "PERMISSIVE"
+    }
   }
 
-  _state = "absent"
+  _state = "present"
 }
 
 
@@ -79,9 +86,6 @@ repository "deleteMe" {
   name = "deleteMe"
   _state = "absent"
 }
-
-
-
 
  ```
 
