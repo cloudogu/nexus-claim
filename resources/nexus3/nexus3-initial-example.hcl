@@ -39,9 +39,13 @@ repository "testProxy" {
       blobStoreName = "default"
       strictContentTypeValidation = false
     }
+    maven = {
+          versionPolicy = "RELEASE"
+          layoutPolicy = "PERMISSIVE"
+    }
   }
 
-  _state = "absent"
+  _state = "present"
 }
 
 

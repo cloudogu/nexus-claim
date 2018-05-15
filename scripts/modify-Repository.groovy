@@ -47,8 +47,9 @@ def createConfiguration(Repository repo){
 
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
-  def online = getOnline(repo)
   def attributes = repo.properties.get("attributes")
+  def online = getOnline(repo)
+
 
   if(recipeName.contains("proxy")){
     attributes = configureProxyAttributes(attributes,recipeName)
@@ -60,6 +61,7 @@ def createConfiguration(Repository repo){
   }
   else if (recipeName.contains("hosted")){
     attributes = configureHostedAttributes(attributes,recipeName)
+
   }
 
   Configuration conf = new Configuration(
@@ -69,7 +71,6 @@ def createConfiguration(Repository repo){
     attributes: attributes
   )
 
-
   return conf
 }
 
@@ -78,30 +79,30 @@ def getName(Repository repo){
   return name
 }
 
-def getRecipeName(Repository repo){
-  String recipeName = repo.getProperties().get("recipeName")
-  return recipeName
-}
-
 def getOnline(Repository repo){
   String online = repo.getProperties().get("online")
   return online
 }
 
+def getRecipeName(Repository repo){
+  String recipeName = repo.getProperties().get("recipeName")
+  return recipeName
+}
+
 def configureGroupAttributes(Object attribute){
 
   def attributes = attribute
-  attributes.put("storage", attributes.get("storage").get(0))
-  attributes.put("group",attributes.get("group").get(0))
+  attributes.put("storage", attributes.get("storage"))
+  attributes.put("group",attributes.get("group"))
   return attributes
 }
 
 def configureHostedAttributes(Object attribute, String recipeName){
 
   def attributes = attribute
-  attributes.put("storage", attributes.get("storage").get(0))
+  attributes.put("storage", attributes.get("storage"))
   if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven").get(0))
+    attributes.put("maven", attributes.get("maven"))
   }
 
   return attributes
@@ -111,16 +112,16 @@ def configureProxyAttributes(Object attribute, String recipeName){
 
   def attributes = attribute
   HashMap<String,Object> httpClient = attributes.get("httpclient")
-  def connection = httpClient.get("connection").get(0)
+  def connection = httpClient.get("connection")
   httpClient.put("connection",connection)
 
-  attributes.put("proxy",attributes.get("proxy").get(0))
-  attributes.put("negativeCache",attributes.get("negativeCache").get(0))
+  attributes.put("proxy",attributes.get("proxy"))
+  attributes.put("negativeCache",attributes.get("negativeCache"))
   attributes.put("httpclient",httpClient)
-  attributes.put("storage", attributes.get("storage").get(0))
+  attributes.put("storage", attributes.get("storage"))
 
   if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven").get(0))
+    attributes.put("maven", attributes.get("maven"))
   }
 
   return attributes
