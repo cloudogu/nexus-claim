@@ -66,10 +66,10 @@ repository "scm-manager-snapshots" {
   _state = "present"
 }
 
-repository_group "scm-manager" {
-  name = "SCM-Manager"
+repository "scm-Manager" {
+  name = "scm-Manager"
   online = true
-  recipeName = "maven-group"
+  recipeName = "maven2-group"
   attributes = {
       group = {
         memberNames = ["scm-manager-releases","scm-manager-snapshots"]
@@ -81,7 +81,7 @@ repository_group "scm-manager" {
   _state = "present"
 }
 
-repository "third-party" {
+repository "3rd Party" {
   name = "3rd Party"
   online = true
   recipeName = "maven2-hosted"
@@ -99,7 +99,7 @@ repository "third-party" {
   _state = "present"
 }
 
-repository_group "nuget-group" {
+repository "nuget-group" {
   _state = "absent"
 }
 

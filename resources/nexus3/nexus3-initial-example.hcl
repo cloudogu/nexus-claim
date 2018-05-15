@@ -40,8 +40,8 @@ repository "testProxy" {
       strictContentTypeValidation = false
     }
     maven = {
-          versionPolicy = "RELEASE"
-          layoutPolicy = "PERMISSIVE"
+      versionPolicy = "RELEASE"
+      layoutPolicy = "PERMISSIVE"
     }
   }
 
