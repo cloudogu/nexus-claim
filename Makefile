@@ -73,7 +73,7 @@ GLIDEFLAGS=
 # choose the environment, if BUILD_URL environment variable is available then we are on ci (jenkins)
 ifdef BUILD_URL
 ENVIRONMENT=ci
-GLIDEFLAGS+=--no-color
+GLIDEFLAGS+=--no-color --home $(shell pwd)/.glide
 else
 ENVIRONMENT=local
 endif
