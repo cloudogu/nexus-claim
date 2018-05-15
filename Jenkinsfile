@@ -12,7 +12,7 @@ node('docker') {
   }
 
 
-  docker.image('cloudogu/golang:latest').inside("--volume ${WORKSPACE}:/go/src/${project}") {
+  docker.image('cloudogu/golang:1.10.2').inside("--volume ${WORKSPACE}:/go/src/${project}") {
 
     stage('Build') {
       make 'clean'
