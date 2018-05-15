@@ -86,6 +86,7 @@ func (app *Application) GlobalFlags() []cli.Flag {
 		cli.BoolFlag{
 		  Name:   "nexus2",
 		  Usage:  "use this flag to use nexus-claim with nexus 2",
+      EnvVar: "NEXUS_V2",
     },
 	}
 }
@@ -93,6 +94,7 @@ func (app *Application) GlobalFlags() []cli.Flag {
 func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClient {
 
 	if app.nexusAPIClient != nil {
+
 		return app.nexusAPIClient
 	} else if c.Bool("nexus2"){
     return infrastructure.NewHTTPNexusAPIClient(
