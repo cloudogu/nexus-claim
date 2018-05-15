@@ -1,5 +1,5 @@
-//go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 package infrastructure
+//go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 
 import (
 	"encoding/json"
