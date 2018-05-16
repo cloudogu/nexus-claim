@@ -1,6 +1,6 @@
 #
 # useful targets:
-# 
+#
 # update-dependencies
 #	calls glide to recreate glide.lock and update dependencies
 #
@@ -9,6 +9,9 @@
 #
 # build
 #	builds the executable and ubuntu packages for trusty and xenial
+#
+# generate
+#	generates required go file
 #
 # unit-test
 #	performs unit-testing
@@ -36,7 +39,7 @@
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 
 ARTIFACT_ID=nexus-claim
-VERSION=0.1.0
+VERSION=0.2.0
 COMMIT_ID:=$(shell git rev-parse HEAD)
 
 
@@ -66,10 +69,11 @@ LDFLAGS=-ldflags "-linkmode external -extldflags -static -X main.Version=${VERSI
 GLIDEFLAGS=
 
 
+
 # choose the environment, if BUILD_URL environment variable is available then we are on ci (jenkins)
 ifdef BUILD_URL
 ENVIRONMENT=ci
-GLIDEFLAGS+=--no-color
+GLIDEFLAGS+=--no-color --home $(shell pwd)/.glide
 else
 ENVIRONMENT=local
 endif
@@ -79,14 +83,12 @@ endif
 #
 .DEFAULT_GOAL:=build
 
-
 # updating dependencies
 #
 update-dependencies: glide.lock
 
 glide.lock: glide.yaml
 	${GLIDE} ${GLIDEFLAGS} up
-
 
 # build steps: dependencies, compile, package
 #
@@ -108,7 +110,12 @@ dependencies: info
 	@echo "installing dependencies ..."
 	${GLIDE} ${GLIDEFLAGS} install
 
-${EXECUTABLE}: dependencies
+#generate
+generate:
+	@echo "generating go files"
+	cd infrastructure && go generate
+
+${EXECUTABLE}: dependencies generate
 	@echo "compiling ..."
 	mkdir -p $(TARGET_DIR)
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -o $@

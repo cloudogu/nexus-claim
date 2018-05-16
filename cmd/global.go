@@ -67,7 +67,7 @@ func (app *Application) GlobalFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:   "server, s",
-			Value:  "http://localhost:8081/nexus",
+			Value:  "http://localhost:8081",
 			Usage:  "Url to the nexus server",
 			EnvVar: "NEXUS_SERVER",
 		},
@@ -83,14 +83,28 @@ func (app *Application) GlobalFlags() []cli.Flag {
 			Usage:  "Password of the nexus user",
 			EnvVar: "NEXUS_PASSWORD",
 		},
+		cli.BoolFlag{
+		  Name:   "nexus2",
+		  Usage:  "use this flag to use nexus-claim with nexus 2",
+      EnvVar: "NEXUS_V2",
+    },
 	}
 }
 
 func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClient {
+
 	if app.nexusAPIClient != nil {
+
 		return app.nexusAPIClient
-	}
-	return infrastructure.NewHTTPNexusAPIClient(
+	} else if c.Bool("nexus2"){
+    return infrastructure.NewHTTPNexusAPIClient(
+      c.GlobalString("server"),
+      c.GlobalString("username"),
+      c.GlobalString("password"),
+    )
+  }
+
+	return infrastructure.NewNexus3APIClient(
 		c.GlobalString("server"),
 		c.GlobalString("username"),
 		c.GlobalString("password"),

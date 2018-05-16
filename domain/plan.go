@@ -12,6 +12,18 @@ func (plan *Plan) GetActions() []Action {
 	return plan.actions
 }
 
+// AddAction adds an action to the plan
+func (plan *Plan) AddAction(actionType ActionType, repository Repository) {
+	switch actionType {
+	case ActionCreate:
+		plan.Create(repository)
+	case ActionModify:
+		plan.Modify(repository)
+	case ActionRemove:
+		plan.Remove(repository)
+	}
+}
+
 // Create adds a create action to the plan
 func (plan *Plan) Create(repository Repository) {
 	plan.appendAction(&createAction{baseAction{Type: ActionCreate, Repository: repository}})
@@ -38,18 +50,6 @@ func (plan *Plan) Remove(repository Repository) {
 	plan.appendAction(&removeAction{baseAction{Type: ActionRemove, Repository: repository}})
 }
 
-// AddAction adds an action to the plan
-func (plan *Plan) AddAction(actionType ActionType, repository Repository) {
-	switch actionType {
-	case ActionCreate:
-		plan.Create(repository)
-	case ActionModify:
-		plan.Modify(repository)
-	case ActionRemove:
-		plan.Remove(repository)
-	}
-}
-
 func (plan *Plan) appendAction(action Action) {
 	if plan.actions == nil {
 		plan.actions = []Action{}
@@ -68,7 +68,7 @@ func (plan *Plan) Execute(writer NexusAPIWriter) error {
 	return nil
 }
 
-// CreatePlan compares the model with the nexus and creates a plan, which describes action to get nexus in sync
+// CreatePlan compares the model with the nexus and creates a plan, which describes actions to get nexus in sync
 // with the described model.
 func CreatePlan(modelDAO ModelDAO, reader NexusAPIReader) (*Plan, error) {
 	model, err := modelDAO.Get()
