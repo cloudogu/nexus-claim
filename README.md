@@ -7,7 +7,7 @@ Define your [Sonatype Nexus](http://www.sonatype.org/nexus/) repository structur
 ```bash
 $ nexus-claim plan -i resources/nexus3/nexus3-initial-example.hcl -o resources/nexus3/nexus3-initial-example.json
 $ nexus-claim apply -i resources/nexus3/nexus3-initial-example.json
-`
+```
 
 ## Things to consider for .hcl of nexus 3
 - `repository "xxx"` should be the same as `name = "xxx"`
