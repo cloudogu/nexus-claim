@@ -39,7 +39,7 @@
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 
 ARTIFACT_ID=nexus-claim
-VERSION=0.1.0
+VERSION=0.2.0
 COMMIT_ID:=$(shell git rev-parse HEAD)
 
 
