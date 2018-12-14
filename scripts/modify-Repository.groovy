@@ -94,6 +94,11 @@ def configureGroupAttributes(Object attribute){
   def attributes = attribute
   attributes.put("storage", attributes.get("storage"))
   attributes.put("group",attributes.get("group"))
+  if (recipeName.contains("maven")){
+    attributes.put("maven", attributes.get("maven").get(0))
+  } else if (recipeName.contains("docker")){
+    attributes.put("docker", attributes.get("docker").get(0))
+  }
   return attributes
 }
 
@@ -102,8 +107,12 @@ def configureHostedAttributes(Object attribute, String recipeName){
   def attributes = attribute
   attributes.put("storage", attributes.get("storage"))
   if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
+    attributes.put("maven", attributes.get("maven").get(0))
+  } else if (recipeName.contains("docker")){
+    attributes.put("docker", attributes.get("docker").get(0))
   }
+
+
 
   return attributes
 }
@@ -121,7 +130,10 @@ def configureProxyAttributes(Object attribute, String recipeName){
   attributes.put("storage", attributes.get("storage"))
 
   if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
+    attributes.put("maven", attributes.get("maven").get(0))
+  } else if (recipeName.contains("docker")){
+    attributes.put("docker", attributes.get("docker").get(0))
+    attributes.put("dockerProxy", attributes.get("dockerProxy").get(0))
   }
 
   return attributes
