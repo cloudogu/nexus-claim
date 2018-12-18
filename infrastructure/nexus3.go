@@ -36,6 +36,7 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to execute readRepository.groovy with %s", stringID)
 	}
+
 	if client.isStatusNotFound(jsonData) {
     return nil, nil
 	}

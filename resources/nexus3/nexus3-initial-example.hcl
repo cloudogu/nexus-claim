@@ -14,8 +14,30 @@ repository "testGroup" {
   _state = "present"
 }
 
-repository "docker-registry" {
-  name = "docker-registry"
+repository "docker-registry2" {
+  name = "docker-registry2"
+  online = true
+  recipeName = "docker-hosted"
+  _state = "present"
+
+  attributes = {
+    docker = {
+      v1Enabled = false
+      forceBasicAuth = true
+      httpPort = 222
+      httpsPort = 122
+    }
+
+    storage = {
+      blobStoreName = "default"
+      writePolicy = "ALLOW"
+      strictContentTypeValidation = true
+    }
+  }
+}
+
+repository "docker-registry1" {
+  name = "docker-registry1"
   online = true
   recipeName = "docker-proxy"
   _state = "present"
@@ -116,6 +138,31 @@ repository "testHosted" {
 repository "deleteMe" {
   name = "deleteMe"
   _state = "absent"
+}
+
+
+
+repository "docker-registry3" {
+  name = "docker-registry3"
+  online = true
+  recipeName = "docker-group"
+  _state = "present"
+
+  attributes = {
+    docker = {
+      v1Enabled = false
+      forceBasicAuth = true
+      httpPort = 33
+      httpsPort = 34
+    }
+    group = {
+      memberNames = ["docker-registry1","docker-registry2"]
+    }
+    storage = {
+      blobStoreName = "default"
+    }
+
+  }
 }
 
 
