@@ -3,11 +3,11 @@
 package main
 
 import (
-	cli "gopkg.in/urfave/cli.v2"
+  "gopkg.in/urfave/cli.v2"
 
-	"os"
+  "os"
 
-	"github.com/cloudogu/nexus-claim/cmd"
+  "github.com/cloudogu/nexus-claim/cmd"
 )
 
 var (
@@ -30,7 +30,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 }
 

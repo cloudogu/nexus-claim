@@ -66,21 +66,6 @@ repository "scm-manager-snapshots" {
   _state = "present"
 }
 
-repository "scm-Manager" {
-  name = "scm-Manager"
-  online = true
-  recipeName = "maven2-group"
-  attributes = {
-      group = {
-        memberNames = ["scm-manager-releases","scm-manager-snapshots"]
-      }
-    storage = {
-      blobStoreName = "default"
-    }
-  }
-  _state = "present"
-}
-
 repository "3rd Party" {
   name = "3rd Party"
   online = true
@@ -109,4 +94,24 @@ repository "nuget-hosted" {
 
 repository "nuget.org-proxy" {
   _state = "absent"
+}
+
+repository "scm-manager" {
+  name = "scm-manager"
+  online = true
+  recipeName = "maven2-group"
+  attributes = {
+    group = {
+      memberNames = ["scm-manager-releases","scm-manager-snapshots"]
+    }
+    storage = {
+      blobStoreName = "default"
+      strictContentTypeValidation = false
+    }
+    maven = {
+      versionPolicy = "RELEASE"
+      layoutPolicy = "PERMISSIVE"
+    }
+  }
+  _state = "present"
 }

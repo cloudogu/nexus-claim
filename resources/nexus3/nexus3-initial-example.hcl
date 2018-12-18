@@ -14,6 +14,53 @@ repository "testGroup" {
   _state = "present"
 }
 
+repository "docker-registry" {
+  name = "docker-registry"
+  online = true
+  recipeName = "docker-proxy"
+  _state = "present"
+
+   attributes = {
+      docker = {
+        forceBasicAuth = true
+        v1Enabled = false
+        httpPort = 2
+        httpsPort = 1
+      }
+
+      dockerProxy = {
+	      indexType = "HUB"
+        indexUrl = "http://test.de"
+        useTrustStoreForIndexAccess = true
+      }
+
+     httpclient = {
+       connection = {
+         blocked = false
+         autoBlock = true
+         useTrustStore = false
+
+       }
+     }
+
+      negativeCache = {
+        enabled = true
+        timeToLive = 1440
+      }
+
+      proxy = {
+        contentMaxAge = 1440
+        metadataMaxAge = 1440
+        remoteUrl = "https://slm.zd.intranet.bund.de/nexus/repository/public-group-docker"
+      }
+
+      storage = {
+        blobStoreName = "default"
+        strictContentTypeValidation = true
+      }
+   }
+}
+
 repository "testProxy" {
   name = "testProxy"
   online = true
@@ -47,7 +94,6 @@ repository "testProxy" {
 
   _state = "present"
 }
-
 
 repository "testHosted" {
   name = "testHosted"
