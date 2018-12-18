@@ -57,6 +57,7 @@ def createConfiguration(Repository repo){
   }
   else if (recipeName.contains("hosted")){
     attributes = configureHostedAttributes(attributes,recipeName)
+
   }
 
   Configuration conf = new Configuration(
@@ -108,8 +109,12 @@ def configureHostedAttributes(Object attribute, String recipeName){
 
   if (recipeName.contains("maven")){
     attributes.put("maven", attributes.get("maven").get(0))
-  } else if (recipeName.contains("docker")){
+  }
+  else if (recipeName.contains("docker")){
     attributes.put("docker", attributes.get("docker").get(0))
+  }
+  else if (recipeName.contains("yum")){
+    attributes.put("yum", attributes.get("yum").get(0))
   }
 
   return attributes
@@ -129,10 +134,12 @@ def configureProxyAttributes(Object attribute, String recipeName){
 
   if (recipeName.contains("maven")){
     attributes.put("maven", attributes.get("maven").get(0))
-  } else if (recipeName.contains("docker")){
+  }
+  else if (recipeName.contains("docker")){
     attributes.put("docker", attributes.get("docker").get(0))
     attributes.put("dockerProxy", attributes.get("dockerProxy").get(0))
-  } else if (recipeName.contains("bower")){
+  }
+  else if (recipeName.contains("bower")){
     attributes.put("bower", attributes.get("bower").get(0))
   }
 

@@ -170,6 +170,25 @@ repository "testHosted" {
   _state = "present"
 }
 
+repository "yumhosted" {
+  name = "yumhosted"
+  online = true
+  recipeName = "yum-hosted"
+  attributes = {
+    storage = {
+      blobStoreName = "default"
+      writePolicy = "ALLOW"
+      strictContentTypeValidation = false
+    }
+    yum = {
+      deployPolicy = "PERMISSIVE",
+      repodataDepth = 2
+    }
+  }
+  _state = "present"
+}
+
+
 repository "deleteMe" {
   name = "deleteMe"
   _state = "absent"

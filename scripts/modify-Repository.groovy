@@ -112,6 +112,8 @@ def configureHostedAttributes(Object attribute, String recipeName){
     attributes.put("maven", attributes.get("maven"))
   } else if (recipeName.contains("docker")){
     attributes.put("docker", attributes.get("docker"))
+  } else if (recipeName.contains("yum")){
+    attributes.put("yum", attributes.get("yum"))
   }
 
   return attributes

@@ -3,7 +3,6 @@ package infrastructure
 
 import (
   "encoding/json"
-  "fmt"
   "github.com/cloudogu/nexus-claim/domain"
   "github.com/cloudogu/nexus-scripting/manager"
   "github.com/pkg/errors"
@@ -63,8 +62,6 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 		return errors.Wrapf(err, "failed to parse to JSON from repository %s to create it",repository.ID)
 	}
 
-	fmt.Println(readAbleJSON)
-
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
     return errors.Wrapf(err, "failed to execute createRepository.groovy with %s" ,repository.ID)
@@ -88,8 +85,6 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
   if err != nil {
     return errors.Wrapf(err, "failed to parse to JSON from repository %s to modify it",repository.ID)
 	}
-  fmt.Println("modiy", readAbleJSON)
-
 
   output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
