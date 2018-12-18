@@ -24,7 +24,6 @@ def modifyRepository(String repositoryID, Configuration configuration) {
     repository.getRepositoryManager().get(repositoryID).update(configuration)
   }
   catch (Exception e) {
-    repository.getRepositoryManager().get(repositoryID).start()
     return e
   }
   finally {
