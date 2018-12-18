@@ -1,16 +1,51 @@
-
 repository "testGroup" {
   name = "testGroup"
   online = true
   recipeName = "bower-group"
   attributes = {
-      group = {
-        memberNames = ["maven-public","maven-central"]
-      }
+    group = {
+      memberNames = [
+        "maven-public",
+        "maven-central"]
+    }
     storage = {
       blobStoreName = "default"
     }
   }
+  _state = "present"
+}
+
+
+repository "bowerProxy" {
+  name = "bowerProxy"
+  online = true
+  recipeName = "bower-proxy"
+
+  attributes = {
+    httpclient = {
+      connection = {
+        blocked = false
+        autoBlock = true
+      }
+    }
+    proxy = {
+      remoteUrl = "http://www.test.de"
+      contentMaxAge = 1440
+      metadataMaxAge = 1440
+    }
+    negativeCache = {
+      enabled = true
+      timeToLive = 1440
+    }
+    storage = {
+      blobStoreName = "default"
+      strictContentTypeValidation = false
+    }
+    bower = {
+      rewritePackageUrls = true
+    }
+  }
+
   _state = "present"
 }
 
@@ -42,45 +77,45 @@ repository "docker-registry1" {
   recipeName = "docker-proxy"
   _state = "present"
 
-   attributes = {
-      docker = {
-        forceBasicAuth = true
-        v1Enabled = false
-        httpPort = 2
-        httpsPort = 1
+  attributes = {
+    docker = {
+      forceBasicAuth = true
+      v1Enabled = false
+      httpPort = 2
+      httpsPort = 1
+    }
+
+    dockerProxy = {
+      indexType = "HUB"
+      indexUrl = "http://test.de"
+      useTrustStoreForIndexAccess = true
+    }
+
+    httpclient = {
+      connection = {
+        blocked = false
+        autoBlock = true
+        useTrustStore = false
+
       }
+    }
 
-      dockerProxy = {
-	      indexType = "HUB"
-        indexUrl = "http://test.de"
-        useTrustStoreForIndexAccess = true
-      }
+    negativeCache = {
+      enabled = true
+      timeToLive = 1440
+    }
 
-     httpclient = {
-       connection = {
-         blocked = false
-         autoBlock = true
-         useTrustStore = false
+    proxy = {
+      contentMaxAge = 1440
+      metadataMaxAge = 1440
+      remoteUrl = "https://slm.zd.intranet.bund.de/nexus/repository/public-group-docker"
+    }
 
-       }
-     }
-
-      negativeCache = {
-        enabled = true
-        timeToLive = 1440
-      }
-
-      proxy = {
-        contentMaxAge = 1440
-        metadataMaxAge = 1440
-        remoteUrl = "https://slm.zd.intranet.bund.de/nexus/repository/public-group-docker"
-      }
-
-      storage = {
-        blobStoreName = "default"
-        strictContentTypeValidation = true
-      }
-   }
+    storage = {
+      blobStoreName = "default"
+      strictContentTypeValidation = true
+    }
+  }
 }
 
 repository "testProxy" {
@@ -96,7 +131,7 @@ repository "testProxy" {
       }
     }
     proxy = {
-      remoteUrl= "http://www.test.de"
+      remoteUrl = "http://www.test.de"
       contentMaxAge = 1440
       metadataMaxAge = 1440
     }
@@ -140,8 +175,6 @@ repository "deleteMe" {
   _state = "absent"
 }
 
-
-
 repository "docker-registry3" {
   name = "docker-registry3"
   online = true
@@ -156,7 +189,9 @@ repository "docker-registry3" {
       httpsPort = 34
     }
     group = {
-      memberNames = ["docker-registry1","docker-registry2"]
+      memberNames = [
+        "docker-registry1",
+        "docker-registry2"]
     }
     storage = {
       blobStoreName = "default"

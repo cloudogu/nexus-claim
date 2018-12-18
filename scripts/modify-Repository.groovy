@@ -135,10 +135,13 @@ def configureProxyAttributes(Object attribute, String recipeName){
 
     attributes.put("maven", attributes.get("maven"))
 
-
   } else if (recipeName.contains("docker")){
     attributes.put("docker", attributes.get("docker"))
     attributes.put("dockerProxy", attributes.get("dockerProxy"))
+  }
+
+  else if (recipeName.contains("bower")){
+    attributes.put("bower", attributes.get("bower"))
   }
 
   return attributes
