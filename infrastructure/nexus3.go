@@ -62,7 +62,8 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 		return errors.Wrapf(err, "failed to parse to JSON from repository %s to create it",repository.ID)
 	}
 
-	output, err := script.ExecuteWithStringPayload(readAbleJSON)
+
+  output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
     return errors.Wrapf(err, "failed to execute createRepository.groovy with %s" ,repository.ID)
 	}

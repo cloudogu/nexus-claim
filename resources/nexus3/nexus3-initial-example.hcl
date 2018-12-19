@@ -1,5 +1,5 @@
 repository "testGroup" {
-  name = "testGroup"
+  repositoryName = "testGroup"
   online = true
   recipeName = "bower-group"
   attributes = {
@@ -17,7 +17,7 @@ repository "testGroup" {
 
 
 repository "bowerProxy" {
-  name = "bowerProxy"
+  repositoryName = "bowerProxy"
   online = true
   recipeName = "bower-proxy"
 
@@ -50,7 +50,7 @@ repository "bowerProxy" {
 }
 
 repository "docker-registry2" {
-  name = "docker-registry2"
+  repositoryName = "docker-registry2"
   online = true
   recipeName = "docker-hosted"
   _state = "present"
@@ -72,7 +72,7 @@ repository "docker-registry2" {
 }
 
 repository "docker-registry1" {
-  name = "docker-registry1"
+  repositoryName = "docker-registry1"
   online = true
   recipeName = "docker-proxy"
   _state = "present"
@@ -87,8 +87,8 @@ repository "docker-registry1" {
 
     dockerProxy = {
       indexType = "HUB"
-      indexUrl = "http://test.de"
-      useTrustStoreForIndexAccess = true
+      indexUrl = "http://www.test.de"
+      useTrustStoreForIndexAccess = false
     }
 
     httpclient = {
@@ -119,7 +119,7 @@ repository "docker-registry1" {
 }
 
 repository "testProxy" {
-  name = "testProxy"
+  repositoryName = "testProxy"
   online = true
   recipeName = "maven2-proxy"
 
@@ -153,7 +153,7 @@ repository "testProxy" {
 }
 
 repository "testHosted" {
-  name = "testHosted"
+  repositoryName = "testHosted"
   online = true
   recipeName = "maven2-hosted"
   attributes = {
@@ -171,7 +171,7 @@ repository "testHosted" {
 }
 
 repository "yumhosted" {
-  name = "yumhosted"
+  repositoryName = "yumhosted"
   online = true
   recipeName = "yum-hosted"
   attributes = {
@@ -190,12 +190,12 @@ repository "yumhosted" {
 
 
 repository "deleteMe" {
-  name = "deleteMe"
+  repositoryName = "deleteMe"
   _state = "absent"
 }
 
 repository "docker-registry3" {
-  name = "docker-registry3"
+  repositoryName = "docker-registry3"
   online = true
   recipeName = "docker-group"
   _state = "present"

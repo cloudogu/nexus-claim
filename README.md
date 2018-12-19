@@ -10,14 +10,14 @@ $ nexus-claim apply -i resources/nexus3/nexus3-initial-example.json
 ```
 
 ## Things to consider for .hcl of nexus 3
-- `repository "xxx"` should be the same as `name = "xxx"`
+- `repository "xxx"` should be the same as `repositoryName = "xxx"`
 - on maven2-hosted- and maven2-proxy-repository there must be a maven sector in addition(with versionPolicy and writePolicy) 
  
 ## Example .hcl for nexus 3
 ```hcl
 
 repository "testGroup" {
-  name = "testGroup"
+  repositoryName = "testGroup"
   online = true
   recipeName = "bower-group"
   attributes = {

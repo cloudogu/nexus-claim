@@ -1,5 +1,5 @@
 repository "scm-manager-releases" {
-  name = "scm-manager-releases"
+  repositoryName = "scm-manager-releases"
   online = true
   recipeName = "maven2-proxy"
 
@@ -33,7 +33,7 @@ repository "scm-manager-releases" {
 }
 
 repository "scm-manager-snapshots" {
-  name = "scm-manager-snapshots"
+  repositoryName = "scm-manager-snapshots"
   online = true
   recipeName = "maven2-proxy"
 
@@ -67,7 +67,7 @@ repository "scm-manager-snapshots" {
 }
 
 repository "3rd Party" {
-  name = "3rd Party"
+  repositoryName = "3rd Party"
   online = true
   recipeName = "maven2-hosted"
   attributes = {
@@ -97,7 +97,7 @@ repository "nuget.org-proxy" {
 }
 
 repository "scm-manager" {
-  name = "scm-manager"
+  repositoryName = "scm-manager"
   online = true
   recipeName = "maven2-group"
   attributes = {
