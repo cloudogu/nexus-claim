@@ -46,6 +46,7 @@ def convertJsonFileToRepo(String jsonData) {
 
 def createConfiguration(Repository repo) {
 
+
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
   def online = getOnline(repo)
@@ -61,6 +62,7 @@ def createConfiguration(Repository repo) {
     online: online,
     attributes: att
   )
+
 
   return conf
 }
@@ -84,7 +86,10 @@ def setDefaultValuesOnNull(Map<String, Object> attributes) {
 
 def configureAttributes(Map<String, Object> attributes) {
 
-  for (att in attributes) {
+
+  def newAttributes = attributes
+
+  for (att in newAttributes) {
 
     if (att.key.equals("httpclient")) {
 
@@ -93,15 +98,15 @@ def configureAttributes(Map<String, Object> attributes) {
       mapValue = configureAttributes(mapValue)
 
       att.setValue(mapValue)
-      attributes.put(att.key, att.value)
+      newAttributes.put(att.key, att.value)
 
     } else {
-      attributes.put(att.key, att.value.get(0))
+      newAttributes.put(att.key, att.value.get(0))
 
     }
 
   }
-  return attributes
+  return newAttributes
 }
 
 def isMapEmpty(Map <String, Object> entry ){

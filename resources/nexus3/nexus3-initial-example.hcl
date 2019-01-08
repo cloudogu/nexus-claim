@@ -96,7 +96,6 @@ repository "docker-registry1" {
         blocked = false
         autoBlock = true
         useTrustStore = false
-
       }
     }
 
