@@ -18,7 +18,7 @@ import (
 )
 
 func TestPlan(t *testing.T) {
-	buffer, err, ec := execPlan("plan", "-i", "../resources/nexus-initial-example.hcl")
+	buffer, err, ec := execPlan("plan", "-i", getResourcesDir()+"nexus-initial-example.hcl")
 	require.Nil(t, err)
 	require.Equal(t, 0, ec)
 
@@ -34,7 +34,7 @@ func TestPlan(t *testing.T) {
 }
 
 func TestPlanWithQuietParameter(t *testing.T) {
-	buffer, err, ec := execPlan("plan", "-q", "-i", "../resources/nexus-initial-example.hcl")
+	buffer, err, ec := execPlan("plan", "-q", "-i", getResourcesDir()+"nexus-initial-example.hcl")
 	require.Nil(t, err)
 	require.Equal(t, 0, ec)
 	assert.Equal(t, 0, buffer.Len())
@@ -46,7 +46,7 @@ func TestPlanWriteOutput(t *testing.T) {
 
 	defer os.Remove(file.Name())
 
-	_, err, ec := execPlan("plan", "-q", "-i", "../resources/detail.hcl", "-o", file.Name())
+	_, err, ec := execPlan("plan", "-q", "-i", getResourcesDir()+"detail.hcl", "-o", file.Name())
 	require.Nil(t, err)
 	require.Equal(t, 0, ec)
 
@@ -65,7 +65,7 @@ func TestPlanWriteOutput(t *testing.T) {
 }
 
 func TestPlanWriteToStdOut(t *testing.T) {
-	buffer, err, ec := execPlan("plan", "-i", "../resources/detail.hcl", "-o", "-")
+	buffer, err, ec := execPlan("plan", "-i", getResourcesDir()+"detail.hcl", "-o", "-")
 	require.Nil(t, err)
 	require.Equal(t, 0, ec)
 
@@ -98,4 +98,8 @@ func execPlan(args ...string) (*bytes.Buffer, error, int) {
 	// the application on index 0
 	err := app.Run(append([]string{""}, args...))
 	return &buffer, err, exitCode
+}
+
+func getResourcesDir() string {
+	return "../resources/nexus2/"
 }

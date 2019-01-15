@@ -17,7 +17,7 @@ import (
 )
 
 func TestHttpNexusAPIClient_Get(t *testing.T) {
-	server := servce(t, "/service/local/repositories/test-repo", "simple.json")
+	server := service(t, "/service/local/repositories/test-repo", "simple.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -30,7 +30,7 @@ func TestHttpNexusAPIClient_Get(t *testing.T) {
 }
 
 func TestHttpNexusAPIClient_GetGroup(t *testing.T) {
-	server := servce(t, "/service/local/repo_groups/test-repo", "group.json")
+	server := service(t, "/service/local/repo_groups/test-repo", "group.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -43,7 +43,7 @@ func TestHttpNexusAPIClient_GetGroup(t *testing.T) {
 }
 
 func TestHttpNexusAPIClient_GetNotFound(t *testing.T) {
-	server := servce(t, "/service/local/repositories/test-repo", "answerFromReadRepository.json")
+	server := service(t, "/service/local/repositories/test-repo", "answerFromReadRepository.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -66,7 +66,7 @@ func TestHttpNexusAPIClient_GetInvalidStatusCode(t *testing.T) {
 }
 
 func TestHttpNexusAPIClient_GetInvalidBody(t *testing.T) {
-	server := servce(t, "/service/local/repositories/invalid-body", "invalid-body.json")
+	server := service(t, "/service/local/repositories/invalid-body", "invalid-body.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -102,7 +102,7 @@ func TestHttpNexusAPIClient_GetAuthentication(t *testing.T) {
 }
 
 func TestHttpNexusAPIClient_GetWithFloatConverting(t *testing.T) {
-	server := servce(t, "/service/local/repositories/number-repo", "number.json")
+	server := service(t, "/service/local/repositories/number-repo", "number.json")
 	defer server.Close()
 
 	client := NewHTTPNexusAPIClient(server.URL, "admin", "admin123")
@@ -279,11 +279,11 @@ func TestHttpNexusAPIClient_RemoveGroup(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func servce(t *testing.T, url string, filename string) *httptest.Server {
+func service(t *testing.T, url string, filename string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == url {
 			w.WriteHeader(200)
-			bytes, err := ioutil.ReadFile("../resources/" + filename)
+			bytes, err := ioutil.ReadFile("../resources/nexus2/" + filename)
 			require.Nil(t, err)
 			w.Write(bytes)
 			return

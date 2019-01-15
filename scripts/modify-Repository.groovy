@@ -11,6 +11,7 @@ if (args != "") {
   def repo = convertJsonFileToRepo(args)
   def name = getName(repo)
   def conf = createConfiguration(repo)
+
   def output = modifyRepository(name, conf)
   return output
 }
@@ -50,20 +51,6 @@ def createConfiguration(Repository repo){
   def attributes = repo.properties.get("attributes")
   def online = getOnline(repo)
 
-
-  if(recipeName.contains("proxy")){
-    attributes = configureProxyAttributes(attributes,recipeName)
-  }
-
-  else if (recipeName.contains("group")){
-    attributes = configureGroupAttributes(attributes)
-
-  }
-  else if (recipeName.contains("hosted")){
-    attributes = configureHostedAttributes(attributes,recipeName)
-
-  }
-
   Configuration conf = new Configuration(
     repositoryName: name,
     recipeName: recipeName,
@@ -75,7 +62,7 @@ def createConfiguration(Repository repo){
 }
 
 def getName(Repository repo){
-  String name = repo.getProperties().get("name")
+  String name = repo.getProperties().get("repositoryName")
   return name
 }
 
@@ -87,42 +74,4 @@ def getOnline(Repository repo){
 def getRecipeName(Repository repo){
   String recipeName = repo.getProperties().get("recipeName")
   return recipeName
-}
-
-def configureGroupAttributes(Object attribute){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage"))
-  attributes.put("group",attributes.get("group"))
-  return attributes
-}
-
-def configureHostedAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage"))
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
-  }
-
-  return attributes
-}
-
-def configureProxyAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  HashMap<String,Object> httpClient = attributes.get("httpclient")
-  def connection = httpClient.get("connection")
-  httpClient.put("connection",connection)
-
-  attributes.put("proxy",attributes.get("proxy"))
-  attributes.put("negativeCache",attributes.get("negativeCache"))
-  attributes.put("httpclient",httpClient)
-  attributes.put("storage", attributes.get("storage"))
-
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
-  }
-
-  return attributes
 }

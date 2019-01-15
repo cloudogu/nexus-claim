@@ -2,13 +2,12 @@ package infrastructure
 //go:generate go run ../scripts/generate.go ../infrastructure/groovy_scripts ../scripts
 
 import (
-	"encoding/json"
-
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/cloudogu/nexus-scripting/manager"
-	"github.com/pkg/errors"
-	"reflect"
-	"strings"
+  "encoding/json"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/cloudogu/nexus-scripting/manager"
+  "github.com/pkg/errors"
+  "reflect"
+  "strings"
 )
 
 // NewNexus3APIClient creates a new nexus3APIClient
@@ -37,6 +36,7 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to execute readRepository.groovy with %s", stringID)
 	}
+
 	if client.isStatusNotFound(jsonData) {
     return nil, nil
 	}
@@ -61,10 +61,12 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
   if err != nil {
 		return errors.Wrapf(err, "failed to parse to JSON from repository %s to create it",repository.ID)
 	}
-	output, err := script.ExecuteWithStringPayload(readAbleJSON)
+
+  output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
     return errors.Wrapf(err, "failed to execute createRepository.groovy with %s" ,repository.ID)
 	}
+
 	if !(output == "null") {
 		return errors.Errorf("createRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
 	}
@@ -84,7 +86,7 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
     return errors.Wrapf(err, "failed to parse to JSON from repository %s to modify it",repository.ID)
 	}
 
-	output, err := script.ExecuteWithStringPayload(readAbleJSON)
+  output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
     return errors.Wrapf(err, "failed to execute modifyRepository.groovy with %s", string(repository.ID))
 	}
