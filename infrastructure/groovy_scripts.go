@@ -16,6 +16,17 @@ if (args != "") {
   return output
 }
 
+def convertJsonFileToRepo(String jsonData) {
+  def inputJson = new JsonSlurper().parseText(jsonData)
+  Repository repo = new Repository()
+
+  inputJson.each {
+    repo.properties.put(it.key, it.value)
+  }
+
+  return repo
+}
+
 def createRepository(Repository repo) {
   def conf = createConfiguration(repo)
 
@@ -30,17 +41,6 @@ def createRepository(Repository repo) {
   }
 
   return null
-}
-
-def convertJsonFileToRepo(String jsonData) {
-  def inputJson = new JsonSlurper().parseText(jsonData)
-  Repository repo = new Repository()
-
-  inputJson.each {
-    repo.properties.put(it.key, it.value)
-  }
-
-  return repo
 }
 
 def createConfiguration(Repository repo) {
@@ -65,7 +65,7 @@ def createConfiguration(Repository repo) {
 
 /* recursively converts map entries which are lists with exactly one object */
 def flattenSingleObjectLists(Map<String, Object> attributes) {
-  def newAttributes = new HashMap<Map, Object>()
+  def attributesCopy = new HashMap<Map, Object>()
 
   for (Map.Entry entry : attributes) {
     def key = entry.getKey()
@@ -82,13 +82,13 @@ def flattenSingleObjectLists(Map<String, Object> attributes) {
     } else {
       mapValue = val
     }
-    newAttributes.put(key, mapValue)
+    attributesCopy.put(key, mapValue)
   }
 
-  return newAttributes
+  return attributesCopy
 }
 
-// adds maven specific policies if they are unconfigured
+/* adds maven specific policies if they are unconfigured */
 def possiblySanitizeMavenDefaults(Map<String, Object> attributes) {
   Map<String, Object> result = new HashMap<String, Object>(attributes)
 
