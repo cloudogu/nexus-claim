@@ -1,35 +1,19 @@
 import groovy.json.JsonSlurper
 import org.sonatype.nexus.repository.config.Configuration
+import java.util.*
 
 class Repository {
-  Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
+  Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>()
 }
 
 if (args != "") {
-
   def rep = convertJsonFileToRepo(args)
   def output = createRepository(rep)
 
   return output
-
-}
-
-def createRepository(Repository repo) {
-
-  def conf = createConfiguration(repo)
-
-  try {
-    repository.createRepository(conf)
-  }
-  catch (Exception e) {
-    return e
-  }
-
-  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {
-
   def inputJson = new JsonSlurper().parseText(jsonData)
   Repository repo = new Repository()
 
@@ -40,18 +24,31 @@ def convertJsonFileToRepo(String jsonData) {
   return repo
 }
 
+def createRepository(Repository repo) {
+  def conf = createConfiguration(repo)
+
+  try {
+    repository.createRepository(conf)
+  }
+  catch (Exception e) {
+    if (e.getMessage().contains("Failed to initialize facets")) {
+      return new RuntimeException("Could not create repository. Does it already exist? Please check the logs. " + e.toString(), e)
+    }
+    return e
+  }
+
+  return null
+}
 
 def createConfiguration(Repository repo) {
-
-
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
   def online = getOnline(repo)
-  def attributes = repo.properties.get("attributes")
+  Map<String, Object> attributes = repo.properties.get("attributes")
 
-  attributes = configureAttributes(attributes)
+  attributes = flattenSingleObjectLists(attributes)
 
-  att = setDefaultValuesOnNull(attributes)
+  att = possiblySanitizeMavenDefaults(attributes)
 
   Configuration conf = new Configuration(
     repositoryName: name,
@@ -60,75 +57,70 @@ def createConfiguration(Repository repo) {
     attributes: att
   )
 
-
   return conf
 }
 
-def setDefaultValuesOnNull(Map<String, Object> attributes) {
+/* recursively converts map entries which are lists with exactly one object */
+def flattenSingleObjectLists(Map<String, Object> attributes) {
+  def attributesCopy = new HashMap<Map, Object>()
 
-  Map<String, Object> result = attributes
+  for (Map.Entry entry : attributes) {
+    def key = entry.getKey()
+    def val = entry.getValue()
+
+    def mapValue
+    if (val instanceof List) {
+      if (val.size == 1 && val.get(0) instanceof Map) {
+        Map<String, Object> embeddedList = val.get(0)
+        mapValue = flattenSingleObjectLists(embeddedList)
+      } else {
+        mapValue = val
+      }
+    } else {
+      mapValue = val
+    }
+    attributesCopy.put(key, mapValue)
+  }
+
+  return attributesCopy
+}
+
+/* adds maven specific policies if they are unconfigured */
+def possiblySanitizeMavenDefaults(Map<String, Object> attributes) {
+  Map<String, Object> result = new HashMap<String, Object>(attributes)
 
   for (att in attributes) {
-
     if (att.key.equals("maven")) {
-
       HashMap<String, Object> mavenEntry = att.value
+
       mavenEntry = replaceMavenEntryIfNull(mavenEntry)
       result.put(att.key, mavenEntry)
     }
   }
+
   return result
 }
 
-
-def configureAttributes(Map<String, Object> attributes) {
-
-
-  def newAttributes = attributes
-
-  for (att in newAttributes) {
-
-    if (att.key.equals("httpclient")) {
-
-      HashMap<String, Object> mapValue = att.value.get(0)
-
-      mapValue = configureAttributes(mapValue)
-
-      att.setValue(mapValue)
-      newAttributes.put(att.key, att.value)
-
-    } else {
-      newAttributes.put(att.key, att.value.get(0))
-
-    }
-
+def replaceMavenEntryIfNull(Map<String, Object> entry) {
+  if (isMapEmpty(entry)) {
+    entry = getDefaultMavenEntry()
   }
-  return newAttributes
+
+  return entry
 }
 
-def isMapEmpty(Map <String, Object> entry ){
-
+def isMapEmpty(Map<String, Object> entry) {
   if (entry.size() == 0) {
     return true
   }
 
   entry.each {
-    if (!it.value.equals("")){
+    if (!it.value.equals("")) {
       return false
     }
   }
 
   return true
-
-}
-
-def replaceMavenEntryIfNull(Map<String, Object> entry) {
-
-  if (isMapEmpty(entry)) {
-    entry = getDefaultMavenEntry()
-  }
-  return entry
-
 }
 
 def getDefaultMavenEntry() {
