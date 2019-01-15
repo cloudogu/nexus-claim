@@ -1,0 +1,61 @@
+{
+  "Actions": [
+    {
+      "Type": 0,
+      "Repository": {
+        "ID": "docker-registry",
+        "Properties": {
+          "attributes": {
+            "docker": [
+              {
+                "forceBasicAuth": true,
+                "v1Enabled": false
+              }
+            ],
+            "dockerProxy": [
+              {
+                "indexType": "HUB",
+                "indexUrl": "http://test.de",
+                "useTrustStoreForIndexAccess": true
+              }
+            ],
+            "httpclient": [
+              {
+                "autoBlock": true,
+                "blocked": false,
+                "connection": [
+                  {
+                    "useTrustStore": false
+                  }
+                ]
+              }
+            ],
+            "negativeCache": [
+              {
+                "enabled": true,
+                "timeToLive": 1440
+              }
+            ],
+            "proxy": [
+              {
+                "contentMaxAge": 1440,
+                "metadataMaxAge": 1440,
+                "remoteUrl": "https://slm.zd.intranet.bund.de/nexus/repository/public-group-docker"
+              }
+            ],
+            "storage": [
+              {
+                "blobStoreName": "default",
+                "strictContentTypeValidation": true
+              }
+            ]
+          },
+          "online": true,
+          "recipeName": "docker-proxy",
+          "repositoryName": "docker-registry"
+        },
+        "Type": 0
+      }
+    }
+  ]
+}
