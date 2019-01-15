@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"fmt"
 	"os"
 
 	"io/ioutil"
@@ -179,10 +180,16 @@ func (dao *fileModelDAO) normalizeProperties(properties domain.Properties) {
 	dao.unwrapNestedProperties(properties)
 }
 
-func (dao *fileModelDAO) unwrapNestedProperties(properties domain.Properties) {
+func (dao *fileModelDAO) unwrapNestedProperties(properties map[string]interface{}) {
 	for key, value := range properties {
 		if dao.isNestedProperty(value) {
-			properties[key] = dao.unwrapNestedProperty(value)
+			fmt.Println("unwrap", key)
+
+			unwrapped := dao.unwrapNestedProperty(value)
+
+			dao.unwrapNestedProperties(unwrapped.(map[string]interface{}))
+
+			properties[key] = unwrapped
 		}
 	}
 }
