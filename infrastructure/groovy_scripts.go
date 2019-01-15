@@ -2,41 +2,24 @@
 package infrastructure
 
 const CREATE_REPOSITORY = `import groovy.json.JsonSlurper
-import org.sonatype.nexus.blobstore.api.BlobStoreManager
 import org.sonatype.nexus.repository.config.Configuration
-import org.sonatype.nexus.repository.storage.WritePolicy
+import java.util.*
 
 class Repository {
-  Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
+  Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>()
 }
 
 if (args != "") {
-
   def rep = convertJsonFileToRepo(args)
   def output = createRepository(rep)
 
   return output
-
-}
-
-def createRepository(Repository repo) {
-
-  def conf = createConfiguration(repo)
-
-  try {
-    repository.createRepository(conf)
-  }
-  catch (Exception e){
-    return e
-  }
-
-  return null
 }
 
 def convertJsonFileToRepo(String jsonData) {
-
   def inputJson = new JsonSlurper().parseText(jsonData)
   Repository repo = new Repository()
+
   inputJson.each {
     repo.properties.put(it.key, it.value)
   }
@@ -44,86 +27,127 @@ def convertJsonFileToRepo(String jsonData) {
   return repo
 }
 
-def createConfiguration(Repository repo){
+def createRepository(Repository repo) {
+  def conf = createConfiguration(repo)
 
+  try {
+    repository.createRepository(conf)
+  }
+  catch (Exception e) {
+    if (e.getMessage().contains("Failed to initialize facets")) {
+      return new RuntimeException("Could not create repository. Does it already exist? Please check the logs. " + e.toString(), e)
+    }
+    return e
+  }
+
+  return null
+}
+
+def createConfiguration(Repository repo) {
   def name = getName(repo)
   def recipeName = getRecipeName(repo)
   def online = getOnline(repo)
-  def attributes = repo.properties.get("attributes")
+  Map<String, Object> attributes = repo.properties.get("attributes")
 
-  if(recipeName.contains("proxy")){
-    attributes = configureProxyAttributes(attributes,recipeName)
-  }
+  attributes = flattenSingleObjectLists(attributes)
 
-  else if (recipeName.contains("group")){
-    attributes = configureGroupAttributes(attributes)
-
-  }
-  else if (recipeName.contains("hosted")){
-    attributes = configureHostedAttributes(attributes,recipeName)
-  }
+  att = possiblySanitizeMavenDefaults(attributes)
 
   Configuration conf = new Configuration(
     repositoryName: name,
     recipeName: recipeName,
     online: online,
-    attributes: attributes
+    attributes: att
   )
 
   return conf
 }
 
-def getName(Repository repo){
-  String name = repo.getProperties().get("name")
+/* recursively converts map entries which are lists with exactly one object */
+def flattenSingleObjectLists(Map<String, Object> attributes) {
+  def attributesCopy = new HashMap<Map, Object>()
+
+  for (Map.Entry entry : attributes) {
+    def key = entry.getKey()
+    def val = entry.getValue()
+
+    def mapValue
+    if (val instanceof List) {
+      if (val.size == 1 && val.get(0) instanceof Map) {
+        Map<String, Object> embeddedList = val.get(0)
+        mapValue = flattenSingleObjectLists(embeddedList)
+      } else {
+        mapValue = val
+      }
+    } else {
+      mapValue = val
+    }
+    attributesCopy.put(key, mapValue)
+  }
+
+  return attributesCopy
+}
+
+/* adds maven specific policies if they are unconfigured */
+def possiblySanitizeMavenDefaults(Map<String, Object> attributes) {
+  Map<String, Object> result = new HashMap<String, Object>(attributes)
+
+  for (att in attributes) {
+    if (att.key.equals("maven")) {
+      HashMap<String, Object> mavenEntry = att.value
+
+      mavenEntry = replaceMavenEntryIfNull(mavenEntry)
+      result.put(att.key, mavenEntry)
+    }
+  }
+
+  return result
+}
+
+def replaceMavenEntryIfNull(Map<String, Object> entry) {
+  if (isMapEmpty(entry)) {
+    entry = getDefaultMavenEntry()
+  }
+
+  return entry
+}
+
+def isMapEmpty(Map<String, Object> entry) {
+  if (entry.size() == 0) {
+    return true
+  }
+
+  entry.each {
+    if (!it.value.equals("")) {
+      return false
+    }
+  }
+
+  return true
+}
+
+def getDefaultMavenEntry() {
+  Map<String, String> mavenEntry = new HashMap<>()
+
+  mavenEntry.put("layoutPolicy", "STRICT")
+  mavenEntry.put("versionPolicy", "RELEASE")
+
+  return mavenEntry
+}
+
+def getName(Repository repo) {
+  String name = repo.getProperties().get("repositoryName")
   return name
 }
 
-def getRecipeName(Repository repo){
+def getRecipeName(Repository repo) {
   String recipeName = repo.getProperties().get("recipeName")
   return recipeName
 }
 
-def getOnline(Repository repo){
+def getOnline(Repository repo) {
   String online = repo.getProperties().get("online")
   return online
-}
-
-def configureGroupAttributes(Object attribute){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage").get(0))
-  attributes.put("group",attributes.get("group").get(0))
-  return attributes
-}
-
-def configureHostedAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage").get(0))
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven").get(0))
-  }
-
-  return attributes
-}
-
-def configureProxyAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  HashMap<String,Object> httpClient = attributes.get("httpclient")
-  def connection = httpClient.get("connection").get(0)
-  httpClient.put("connection",connection)
-
-  attributes.put("proxy",attributes.get("proxy").get(0))
-  attributes.put("negativeCache",attributes.get("negativeCache").get(0))
-  attributes.put("httpclient",httpClient)
-  attributes.put("storage", attributes.get("storage").get(0))
-
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven").get(0))
-  }
-
-  return attributes
 }
 `
 const DELETE_REPOSITORY = `def deleteRepository(String name) {
@@ -158,6 +182,7 @@ if (args != "") {
   def repo = convertJsonFileToRepo(args)
   def name = getName(repo)
   def conf = createConfiguration(repo)
+
   def output = modifyRepository(name, conf)
   return output
 }
@@ -197,20 +222,6 @@ def createConfiguration(Repository repo){
   def attributes = repo.properties.get("attributes")
   def online = getOnline(repo)
 
-
-  if(recipeName.contains("proxy")){
-    attributes = configureProxyAttributes(attributes,recipeName)
-  }
-
-  else if (recipeName.contains("group")){
-    attributes = configureGroupAttributes(attributes)
-
-  }
-  else if (recipeName.contains("hosted")){
-    attributes = configureHostedAttributes(attributes,recipeName)
-
-  }
-
   Configuration conf = new Configuration(
     repositoryName: name,
     recipeName: recipeName,
@@ -222,7 +233,7 @@ def createConfiguration(Repository repo){
 }
 
 def getName(Repository repo){
-  String name = repo.getProperties().get("name")
+  String name = repo.getProperties().get("repositoryName")
   return name
 }
 
@@ -234,44 +245,6 @@ def getOnline(Repository repo){
 def getRecipeName(Repository repo){
   String recipeName = repo.getProperties().get("recipeName")
   return recipeName
-}
-
-def configureGroupAttributes(Object attribute){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage"))
-  attributes.put("group",attributes.get("group"))
-  return attributes
-}
-
-def configureHostedAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  attributes.put("storage", attributes.get("storage"))
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
-  }
-
-  return attributes
-}
-
-def configureProxyAttributes(Object attribute, String recipeName){
-
-  def attributes = attribute
-  HashMap<String,Object> httpClient = attributes.get("httpclient")
-  def connection = httpClient.get("connection")
-  httpClient.put("connection",connection)
-
-  attributes.put("proxy",attributes.get("proxy"))
-  attributes.put("negativeCache",attributes.get("negativeCache"))
-  attributes.put("httpclient",httpClient)
-  attributes.put("storage", attributes.get("storage"))
-
-  if (recipeName.contains("maven")){
-    attributes.put("maven", attributes.get("maven"))
-  }
-
-  return attributes
 }
 `
 const READ_REPOSITORY = `import groovy.json.JsonOutput

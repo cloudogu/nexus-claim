@@ -9,19 +9,19 @@ import (
 )
 
 func TestNewFileModelDAO(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/empty.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "empty.hcl")
 	require.NotNil(t, modelDAO)
 }
 
 func TestGetNonExisting(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/666-from-hell.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "666-from-hell.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "could not find model at ../resources/666-from-hell.hcl")
+	require.Contains(t, err.Error(), "could not find model at "+getResourcesDir()+"666-from-hell.hcl")
 }
 
 func TestGetEmpty(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/empty.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "empty.hcl")
 	model, err := modelDAO.Get()
 	require.Nil(t, err)
 	require.NotNil(t, model)
@@ -30,35 +30,35 @@ func TestGetEmpty(t *testing.T) {
 }
 
 func TestGetInvalid(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/invalid.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "invalid.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "failed to parse file ../resources/invalid.hcl")
+	require.Contains(t, err.Error(), "failed to parse file "+getResourcesDir()+"invalid.hcl")
 }
 
 func TestGetWithoutState(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/without-state.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "without-state.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "repository wos has no _state field")
 }
 
 func TestGetWithInvalidState(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/invalid-state.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "invalid-state.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "state invalid of repository irepo is not a valid state")
 }
 
 func TestGetWithInvalidStateType(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/invalid-state-type.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "invalid-state-type.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "state of repository number is not a string")
 }
 
 func TestGetWithEmptyID(t *testing.T) {
-	modelDAO := NewFileModelDAO("../resources/empty-id.hcl")
+	modelDAO := NewFileModelDAO(getResourcesDir() + "empty-id.hcl")
 	_, err := modelDAO.Get()
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "repository with empty id found")
@@ -105,9 +105,13 @@ func TestGetGroup(t *testing.T) {
 }
 
 func get(t *testing.T, file string) domain.Model {
-	modelDAO := NewFileModelDAO("../resources/" + file)
+	modelDAO := NewFileModelDAO(getResourcesDir() + file)
 	model, err := modelDAO.Get()
 	require.Nil(t, err)
 	require.NotNil(t, model)
 	return model
+}
+
+func getResourcesDir() string {
+	return "../resources/nexus2/"
 }
