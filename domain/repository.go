@@ -56,7 +56,7 @@ func (repository Repository) String() string {
 func (repository Repository) Merge(other Repository) (Repository, error) {
 	properties := repository.cloneProperties()
 
-	err := mergo.MergeWithOverwrite(&properties, other.Properties)
+	err := mergo.Merge(&properties, other.Properties, mergo.WithOverride)
 	if err != nil {
 		return repository, errors.Wrap(err, "failed to merge repository properties")
 	}
