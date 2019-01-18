@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"fmt"
 	"os"
 
 	"io/ioutil"
@@ -183,13 +182,11 @@ func (dao *fileModelDAO) normalizeProperties(properties domain.Properties) {
 func (dao *fileModelDAO) unwrapNestedProperties(properties map[string]interface{}) {
 	for key, value := range properties {
 		if dao.isNestedProperty(value) {
-			fmt.Println("unwrap", key)
-
 			unwrapped := dao.unwrapNestedProperty(value)
-
 			dao.unwrapNestedProperties(unwrapped.(map[string]interface{}))
-
 			properties[key] = unwrapped
+		} else if dao.isIntProperty(value) {
+			properties[key] = float64(value.(int))
 		}
 	}
 }
@@ -205,4 +202,9 @@ func (dao *fileModelDAO) isNestedProperty(value interface{}) bool {
 
 func (dao *fileModelDAO) unwrapNestedProperty(value interface{}) interface{} {
 	return value.([]map[string]interface{})[0]
+}
+
+func (dao *fileModelDAO) isIntProperty(value interface{}) bool {
+	v := reflect.ValueOf(value)
+	return v.Kind() == reflect.Int
 }
