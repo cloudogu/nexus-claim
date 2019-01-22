@@ -11,7 +11,7 @@ import (
 )
 
 func TestNexus3APIClient_Get(t *testing.T) {
-	server := servceReadRepository(t, "answerFromReadRepository.json")
+	server := serveReadRepository(t, "answerFromReadRepository.json")
 	defer server.Close()
 
 	client := NewNexus3APIClient(server.URL, "admin", "admin123")
@@ -47,6 +47,7 @@ func TestNexus3APIClient_Create(t *testing.T) {
 
 	properties := make(domain.Properties)
 	properties["id"] = "testRepo"
+	properties["recipeName"] = "docker-hosted"
 	repository := domain.Repository{
 		ID:         domain.RepositoryID("testRepo"),
 		Properties: properties,
@@ -54,6 +55,26 @@ func TestNexus3APIClient_Create(t *testing.T) {
 	}
 	err := client.Create(repository)
 	require.Nil(t, err)
+}
+
+func TestNexus3APIClient_Create_error_no_recipeName(t *testing.T) {
+	server := serveCreateRepository(t, "answerFromCreateRepository.json")
+	defer server.Close()
+
+	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+
+	properties := make(domain.Properties)
+	properties["id"] = "testRepo"
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("testRepo"),
+		Properties: properties,
+		Type:       domain.TypeRepository,
+	}
+
+	err := client.Create(repository)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not find property 'recipeName' in repository")
 }
 
 func TestNexus3APIClient_CreateWithWrongStatusCode(t *testing.T) {
@@ -109,7 +130,6 @@ func TestNexus3APIClient_Modify(t *testing.T) {
 	assert.Equal(t, "testRepo2", string(repository.ID))
 
 	require.Nil(t, err)
-
 }
 
 func TestNexus3APIClient_ModifyWithWrongStatusCode(t *testing.T) {
@@ -122,6 +142,73 @@ func TestNexus3APIClient_ModifyWithWrongStatusCode(t *testing.T) {
 	err := client.Modify(domain.Repository{ID: domain.RepositoryID("test")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "400")
+}
+
+func TestNexus3APIClient_addRepositoryNamesFromID(t *testing.T) {
+	server := serveCreateRepository(t, "answerFromCreateRepository.json")
+	defer server.Close()
+
+	client := nexus3APIClient{url: server.URL, username: "admin", password: "admin123"}
+
+	properties := make(domain.Properties)
+	properties["recipeName"] = "maven2-hosted"
+	nestedProperty := make(map[string]interface{})
+	properties["someMavenProperty"] = nestedProperty
+
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("testRepo"),
+		Properties: properties,
+		Type:       domain.TypeRepository,
+	}
+
+	actualRepo := client.addRepositoryNamesFromID(repository)
+
+	assert.NotNil(t, actualRepo)
+	assert.Contains(t, actualRepo.Properties, "id")
+	assert.Contains(t, actualRepo.Properties, "repositoryName")
+	assert.Equal(t, "testRepo", actualRepo.Properties["id"])
+	assert.Equal(t, "testRepo", actualRepo.Properties["repositoryName"])
+}
+
+func TestNexus3APIClient_addRepoInfosFromRecipeName(t *testing.T) {
+	server := serveCreateRepository(t, "answerFromCreateRepository.json")
+	defer server.Close()
+
+	client := nexus3APIClient{url: server.URL, username: "admin", password: "admin123"}
+
+	properties := make(domain.Properties)
+	properties["recipeName"] = "docker-hosted"
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("testRepo"),
+		Properties: properties,
+		Type:       domain.TypeRepository,
+	}
+	actualRepo, err := client.addRepoInfosFromRecipeName(repository)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, actualRepo)
+	assert.Contains(t, actualRepo.Properties, "type")
+	assert.Contains(t, actualRepo.Properties, "format")
+	assert.Equal(t, "hosted", actualRepo.Properties["type"])
+	assert.Equal(t, "docker", actualRepo.Properties["format"])
+}
+
+func TestNexus3APIClient_addRepoInfosFromRecipeName_error(t *testing.T) {
+	server := serveCreateRepository(t, "answerFromCreateRepository.json")
+	defer server.Close()
+
+	client := nexus3APIClient{url: server.URL, username: "admin", password: "admin123"}
+
+	properties := make(domain.Properties)
+	repository := domain.Repository{
+		ID:         domain.RepositoryID("testRepo"),
+		Properties: properties,
+		Type:       domain.TypeRepository,
+	}
+	_, err := client.addRepoInfosFromRecipeName(repository)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not find property 'recipeName' in repository testRepo")
 }
 
 func serveCreateRepository(t *testing.T, filename string) *httptest.Server {
@@ -139,14 +226,14 @@ func serveCreateRepository(t *testing.T, filename string) *httptest.Server {
 			w.WriteHeader(200)
 			bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
 			require.Nil(t, err)
-			w.Write(bytes)
+			_, _ = w.Write(bytes)
 			return
 		}
 
 	}))
 }
 
-func servceReadRepository(t *testing.T, filename string) *httptest.Server {
+func serveReadRepository(t *testing.T, filename string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		fullPath := r.Method + " " + r.URL.Path
@@ -163,7 +250,7 @@ func servceReadRepository(t *testing.T, filename string) *httptest.Server {
 			w.WriteHeader(200)
 			bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
 			require.Nil(t, err)
-			w.Write(bytes)
+			_, _ = w.Write(bytes)
 			return
 		}
 
@@ -185,7 +272,7 @@ func serveDeleteRepository(t *testing.T, filename string) *httptest.Server {
 			w.WriteHeader(200)
 			bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
 			require.Nil(t, err)
-			w.Write(bytes)
+			_, _ = w.Write(bytes)
 			return
 		}
 
@@ -207,7 +294,7 @@ func serveModifyRepository(t *testing.T, filename string) *httptest.Server {
 			w.WriteHeader(200)
 			bytes, err := ioutil.ReadFile("../resources/nexus3/" + filename)
 			require.Nil(t, err)
-			w.Write(bytes)
+			_, _ = w.Write(bytes)
 			return
 		}
 

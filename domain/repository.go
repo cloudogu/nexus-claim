@@ -1,11 +1,11 @@
 package domain
 
 import (
-	"strings"
-
+	"fmt"
 	"github.com/imdario/mergo"
 	"github.com/kr/pretty"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 const (
@@ -13,6 +13,8 @@ const (
 	TypeRepository RepositoryType = iota
 	// TypeGroup are able to group a set of repositories to single one
 	TypeGroup
+	// repositoryRecipeNameKey denotes the property name which points to a Nexus recipe name (f.i. maven2-hosted)
+	repositoryRecipeNameKey = "recipeName"
 )
 
 // RepositoryID is the identifier of a nexus repository
@@ -41,20 +43,49 @@ func (repository Repository) IsEqual(other Repository) bool {
 			changes = append(changes, diffEntry)
 		}
 	}
+
 	return len(changes) == 0
+}
+
+func (repository Repository) String() string {
+	return fmt.Sprintf("ID: %s\nType: %d\nProperties: %s",
+		string(repository.ID), repository.Type, repository.Properties)
 }
 
 // Merge copies all properties from the other repository, merges them with this repository and returns a new repository.
 func (repository Repository) Merge(other Repository) (Repository, error) {
-	properties := make(Properties)
-	for key, value := range repository.Properties {
-		properties[key] = value
-	}
+	properties := repository.cloneProperties()
 
-	err := mergo.MergeWithOverwrite(&properties, other.Properties)
+	err := mergo.Merge(&properties, other.Properties, mergo.WithOverride)
 	if err != nil {
 		return repository, errors.Wrap(err, "failed to merge repository properties")
 	}
 
 	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}, nil
+}
+
+func (repository Repository) cloneProperties() Properties {
+	properties := make(Properties)
+	for key, value := range repository.Properties {
+		properties[key] = value
+	}
+	return properties
+}
+
+// Clone returns a copy of the original repository.
+func (repository Repository) Clone() Repository {
+	properties := repository.cloneProperties()
+
+	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}
+}
+
+// GetRecipeName returns the value of a Nexus recipe name (f.i. maven2-hosted). If no recipe name is set an error will
+// be returned.
+func (repository Repository) GetRecipeName() (string, error) {
+	recipeName := repository.Properties[repositoryRecipeNameKey]
+	if recipeName == nil {
+		return "", errors.New("could not find property 'recipeName' in repository " + string(repository.ID))
+	}
+
+	return recipeName.(string), nil
 }

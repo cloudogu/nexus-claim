@@ -5,7 +5,7 @@ import (
 
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/stretchr/testify/assert"
-  "github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRepository_IsEqualWithStrings(t *testing.T) {
@@ -48,18 +48,18 @@ func TestRepository_Merge(t *testing.T) {
 	propsA := make(domain.Properties)
 	propsA["name"] = "a"
 	propsA["description"] = "A"
-	repoA := domain.Repository{domain.RepositoryID("a"), propsA, domain.TypeRepository}
+	repoA := domain.Repository{ID: domain.RepositoryID("a"), Properties: propsA, Type: domain.TypeRepository}
 
 	propsB := make(domain.Properties)
 	propsB["name"] = "b"
 	propsB["description"] = "B"
 	propsB["contact"] = "b@b.de"
-	repoB := domain.Repository{domain.RepositoryID("b"), propsB, domain.TypeRepository}
+	repoB := domain.Repository{ID: domain.RepositoryID("b"), Properties: propsB, Type: domain.TypeRepository}
 
 	assertion := assert.New(t)
 
 	mergedRepo, err := repoB.Merge(repoA)
-  require.Nil(t, err)
+	require.Nil(t, err)
 	assertion.Equal(domain.RepositoryID("b"), mergedRepo.ID)
 
 	mergedProps := mergedRepo.Properties
@@ -70,6 +70,52 @@ func TestRepository_Merge(t *testing.T) {
 	// be sure the original repository has not changed
 	assertion.Equal("b", repoB.Properties["name"])
 	assertion.Equal("B", repoB.Properties["description"])
+}
+
+func TestRepository_GetRecipeName(t *testing.T) {
+	props := make(domain.Properties)
+	props["recipeName"] = "repo"
+	repo := domain.Repository{Properties: props}
+
+	actual, err := repo.GetRecipeName()
+
+	assert.Nil(t, err)
+	assert.Equal(t, "repo", actual)
+}
+
+func TestRepository_GetRecipeName_error(t *testing.T) {
+	props := make(domain.Properties)
+	repo := domain.Repository{Properties: props}
+
+	actual, err := repo.GetRecipeName()
+
+	assert.Empty(t, actual)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not find property 'recipeName' in repository")
+}
+
+func TestRepository_Clone(t *testing.T) {
+	props := make(domain.Properties)
+	props["name"] = "name1"
+	props["description"] = "desc1"
+	props["contact"] = "asdf@asdf.de"
+	submap := make(map[string]interface{})
+	submap["subentry"] = "hey"
+	props["maven"] = submap
+	repo := domain.Repository{ID: domain.RepositoryID("repo"), Properties: props, Type: domain.TypeRepository}
+
+	actual := repo.Clone()
+
+	props2 := make(domain.Properties)
+	props2["name"] = "name1"
+	props2["description"] = "desc1"
+	props2["contact"] = "asdf@asdf.de"
+	submap2 := make(map[string]interface{})
+	submap2["subentry"] = "hey"
+	props2["maven"] = submap2
+	expected := domain.Repository{ID: domain.RepositoryID("repo"), Properties: props2, Type: domain.TypeRepository}
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected.Properties, actual.Properties)
 }
 
 func createSimpleRepository(key string, value interface{}) domain.Repository {
