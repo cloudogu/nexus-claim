@@ -121,10 +121,22 @@ ${EXECUTABLE}: dependencies generate
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -o $@
 	@echo "... executable can be found at $@"
 
-${PACKAGE}: ${EXECUTABLE}
-	cd ${TARGET_DIR} && tar cvzf ${ARTIFACT_ID}-${VERSION}.tar.gz ${ARTIFACT_ID}
+${EXECUTABLE}.sha256sum:
+	cd ${TARGET_DIR} && shasum -a 256 ${ARTIFACT_ID} > ${ARTIFACT_ID}.sha256sums
 
-build: ${PACKAGE}
+${EXECUTABLE}.asc:
+	gpg -armor --detach-sign ${EXECUTABLE}
+
+${PACKAGE}: ${EXECUTABLE} ${EXECUTABLE}.sha256sum ${EXECUTABLE}.asc
+	cd ${TARGET_DIR} && tar cvzf ${ARTIFACT_ID}-${VERSION}.tar.gz *
+
+${PACKAGE}.sha256sum:
+	cd ${TARGET_DIR} && shasum -a 256 ${ARTIFACT_ID}-${VERSION}.tar.gz > ${ARTIFACT_ID}-${VERSION}.tar.gz.sha256sums
+
+${PACKAGE}.asc:
+	gpg -armor --detach-sign ${PACKAGE}
+
+build: ${PACKAGE} ${PACKAGE}.sha256sum ${PACKAGE}.asc
 
 
 # unit tests
