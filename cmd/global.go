@@ -83,6 +83,11 @@ func (app *Application) GlobalFlags() []cli.Flag {
 			Usage:  "Password of the nexus user",
 			EnvVar: "NEXUS_PASSWORD",
 		},
+		cli.IntFlag{
+			Name:   "timeout",
+			Value:  30,
+			Usage:  "Timeout for HTTP client requests",
+		},
 		cli.BoolFlag{
 		  Name:   "nexus2",
 		  Usage:  "use this flag to use nexus-claim with nexus 2",
@@ -108,6 +113,7 @@ func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClie
 		c.GlobalString("server"),
 		c.GlobalString("username"),
 		c.GlobalString("password"),
+		c.GlobalInt("timeout"),
 	)
 }
 
