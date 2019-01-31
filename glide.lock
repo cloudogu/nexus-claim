@@ -1,8 +1,8 @@
-hash: 06cfa8f7c6028c5070d39661ff841fa494e15bdc2af7e9c3f1d7391b68883ff5
-updated: 2018-05-07T13:31:10.121988488+02:00
+hash: f42acf586d0ec96e3c02138b585fc481a82c3954c54319dadf142066ebc7b596
+updated: 2019-01-31T14:05:36.668104295+01:00
 imports:
 - name: github.com/cloudogu/nexus-scripting
-  version: 05f2ef2e639220a66a66e205e9358f9c8d47ed15
+  version: f2c98b9e4cd2710ae14fc075ff372043a1364aeb
   subpackages:
   - manager
 - name: github.com/hashicorp/hcl
@@ -17,15 +17,15 @@ imports:
   - json/scanner
   - json/token
 - name: github.com/imdario/mergo
-  version: 9d5f1277e9a8ed20c3684bda8fde67c05628518c
+  version: 7c29201646fa3de8506f701213473dd407f19646
 - name: github.com/kr/pretty
   version: cfb55aafdaf3ec08f0db22699ab822c50091b1c4
 - name: github.com/kr/text
   version: 7cafcd837844e784b526369c9bce262804aebc60
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
 - name: github.com/stretchr/testify
-  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
   - require

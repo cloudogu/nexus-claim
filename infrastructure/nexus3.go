@@ -12,8 +12,9 @@ import (
 )
 
 // NewNexus3APIClient creates a new nexus3APIClient
-func NewNexus3APIClient(url string, username string, password string) domain.NexusAPIClient {
+func NewNexus3APIClient(url string, username string, password string, timeout int) domain.NexusAPIClient {
 	clientManager := manager.New(url, username, password)
+	clientManager.WithTimeout(timeout)
 	return &nexus3APIClient{url, username, password, clientManager}
 }
 
