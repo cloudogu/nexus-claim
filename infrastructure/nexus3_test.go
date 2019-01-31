@@ -14,7 +14,7 @@ func TestNexus3APIClient_Get(t *testing.T) {
 	server := serveReadRepository(t, "answerFromReadRepository.json")
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 	repository, err := client.Get(domain.TypeRepository, domain.RepositoryID("testRepo"))
 	require.Nil(t, err)
 
@@ -33,7 +33,7 @@ func TestNexus3APIClient_GetNotFound(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 	_, err := client.Get(domain.TypeRepository, domain.RepositoryID("testRepo"))
 	assert.NotNil(t, err)
 
@@ -43,7 +43,7 @@ func TestNexus3APIClient_Create(t *testing.T) {
 	server := serveCreateRepository(t, "answerFromCreateRepository.json")
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 
 	properties := make(domain.Properties)
 	properties["id"] = "testRepo"
@@ -61,7 +61,7 @@ func TestNexus3APIClient_Create_error_no_recipeName(t *testing.T) {
 	server := serveCreateRepository(t, "answerFromCreateRepository.json")
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 
 	properties := make(domain.Properties)
 	properties["id"] = "testRepo"
@@ -83,7 +83,7 @@ func TestNexus3APIClient_CreateWithWrongStatusCode(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 	err := client.Create(domain.Repository{ID: domain.RepositoryID("test")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "502")
@@ -93,7 +93,7 @@ func TestNexus3APIClient_Delete(t *testing.T) {
 	server := serveDeleteRepository(t, "answerFromDeleteRepository.json")
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 
 	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
 	require.Nil(t, err)
@@ -105,7 +105,7 @@ func TestNexus3APIClient_DeleteWithInvalidStatusCode(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 	err := client.Remove(domain.Repository{ID: domain.RepositoryID("test-repo")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "404")
@@ -115,7 +115,7 @@ func TestNexus3APIClient_Modify(t *testing.T) {
 	server := serveModifyRepository(t, "answerFromModifyRepository.json")
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 
 	properties := make(domain.Properties)
 	properties["id"] = "testRepo"
@@ -138,7 +138,7 @@ func TestNexus3APIClient_ModifyWithWrongStatusCode(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewNexus3APIClient(server.URL, "admin", "admin123")
+	client := NewNexus3APIClient(server.URL, "admin", "admin123", 30)
 	err := client.Modify(domain.Repository{ID: domain.RepositoryID("test")})
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "400")
