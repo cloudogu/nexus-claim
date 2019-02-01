@@ -83,10 +83,6 @@ repository "yourcompshared" {
 }
 
 repository "public" {
-  id = "public"
-  format = "maven2"
-  type = "group"
-  repositoryName = "public"
   online = true
   recipeName = "maven2-group"
   attributes = {
