@@ -2,7 +2,7 @@
 package infrastructure
 
 const CREATE_REPOSITORY = `import groovy.json.JsonSlurper
-import org.sonatype.nexus.repository.config.Configuration
+import org.sonatype.nexus.repository.manager.RepositoryManager;
 import java.util.*
 
 class Repository {
@@ -49,12 +49,12 @@ def createConfiguration(Repository repo) {
   def online = getOnline(repo)
   Map<String, Object> attributes = repo.properties.get("attributes")
 
-  Configuration conf = new Configuration(
-    repositoryName: name,
+  def repoManager = container.lookup(RepositoryManager.class.name)
+  def conf = repoManager.newConfiguration(repositoryName: name,
     recipeName: recipeName,
     online: online,
-    attributes: attributes
-  )
+    attributes: attributes)
+
 
   return conf
 }

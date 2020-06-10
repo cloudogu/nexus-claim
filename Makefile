@@ -57,7 +57,7 @@ APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
 # tools
 LINT=gometalinter
-GLIDE=glide
+
 GO2XUNIT=go2xunit
 
 
@@ -83,12 +83,12 @@ endif
 #
 .DEFAULT_GOAL:=build
 
-# updating dependencies
-#
-update-dependencies: glide.lock
+.PHONY: dependencies
+dependencies: vendor
 
-glide.lock: glide.yaml
-	${GLIDE} ${GLIDEFLAGS} up
+vendor: go.mod go.sum
+	@echo "Installing dependencies using go modules..."
+	${GO_CALL} mod vendor
 
 # build steps: dependencies, compile, package
 #
@@ -106,9 +106,6 @@ info:
 	@echo "Branch-Type: $(BRANCH_TYPE)"
 	@echo "Packages   : $(PACKAGES)"
 
-dependencies: info
-	@echo "installing dependencies ..."
-	${GLIDE} ${GLIDEFLAGS} install
 
 #generate
 generate:
@@ -118,7 +115,7 @@ generate:
 ${EXECUTABLE}: dependencies generate
 	@echo "compiling ..."
 	mkdir -p $(TARGET_DIR)
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -o $@
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -a -tags netgo ${LDFLAGS} -o $@
 	@echo "... executable can be found at $@"
 
 ${PACKAGE}: ${EXECUTABLE}
