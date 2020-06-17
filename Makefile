@@ -39,7 +39,8 @@
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 
 ARTIFACT_ID=nexus-claim
-VERSION=0.3.0
+VERSION=0.3.1
+GO_ENVIRONMENT=GO111MODULE=on
 COMMIT_ID:=$(shell git rev-parse HEAD)
 
 
@@ -66,7 +67,11 @@ LINTFLAGS=--vendor --exclude="vendor" --exclude="_test.go"
 LINTFLAGS+=--disable-all --enable=errcheck --enable=vet --enable=golint
 LINTFLAGS+=--deadline=2m
 LDFLAGS=-ldflags "-extldflags -static -X main.Version=${VERSION} -X main.CommitID=${COMMIT_ID}"
-GLIDEFLAGS=
+
+include build/make/variables.mk
+include build/make/self-update.mk
+include build/make/clean.mk
+include build/make/dependencies-gomod.mk
 
 
 
@@ -83,12 +88,7 @@ endif
 #
 .DEFAULT_GOAL:=build
 
-.PHONY: dependencies
-dependencies: vendor
 
-vendor: go.mod go.sum
-	@echo "Installing dependencies using go modules..."
-	${GO_CALL} mod vendor
 
 # build steps: dependencies, compile, package
 #
@@ -123,7 +123,6 @@ ${PACKAGE}: ${EXECUTABLE}
 
 build: ${PACKAGE}
 
-
 # unit tests
 #
 unit-test: ${XUNIT_XML}
@@ -135,12 +134,6 @@ ${XUNIT_XML}:
 		exit 1; \
 	fi
 	cat ${TARGET_DIR}/unit-tests.log | go2xunit -output $@
-
-
-# integration tests, not yet
-#
-integration-test:
-	@echo "not yet implemented"
 
 
 # static analysis
@@ -168,21 +161,3 @@ ${TARGET_DIR}/static-analysis-cs.log:
 	@$(LINT) ${LINTFLAGS} --checkstyle ./... > $@ | true
 
 
-# clean lifecycle
-#
-clean:
-	rm -rf ${TARGET_DIR}
-
-dist-clean: clean
-	rm -rf node_modules
-	rm -rf public/vendor
-	rm -rf vendor
-	rm -rf npm-cache
-	rm -rf bower
-
-.PHONY: update-dependencies
-.PHONY: build dependencies info
-.PHONY: static-analysis static-analysis-ci static-analysis-local
-.PHONY: integration-test
-.PHONY: unit-test
-.PHONY: clean dist-clean
