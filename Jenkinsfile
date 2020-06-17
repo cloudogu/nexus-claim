@@ -19,7 +19,7 @@ node('docker') {
       sh 'git config --global url."https://$USERNAME:$REVIEWDOG_GITHUB_API_TOKEN@github.com".insteadOf "https://github.com"'
     }
     stage('Build') {
-      make clean
+      make 'clean'
       make ''
       archiveArtifacts 'target/**/*.tar.gz'
     }
