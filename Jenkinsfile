@@ -12,8 +12,10 @@ node('docker') {
   }
 
 
-  docker.image('cloudogu/golang:1.10.2').inside("--volume ${WORKSPACE}:/go/src/${project}") {
-
+  docker.image('cloudogu/golang:1.13.10-1').inside("--volume ${WORKSPACE}:/go/src/${project}") {
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sonarqube-gh', usernameVariable: 'USERNAME', passwordVariable: 'REVIEWDOG_GITHUB_API_TOKEN']]) {
+      sh 'git config --global url."https://$USERNAME:$REVIEWDOG_GITHUB_API_TOKEN@github.com".insteadOf "https://github.com"'
+    }
     stage('Build') {
       make 'clean'
       make 'build'
