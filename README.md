@@ -2,9 +2,6 @@
 
 Define your [Sonatype Nexus](http://www.sonatype.org/nexus/) repository structure as code. This script defaults to interact with a nexus server running on [localhost](http://localhost:8081).
 
-## Development
-- Use golang 1.9 for compiling, 1.10 will lead to a segmentation fault when running the tool!
-
 ## Syntax of nexus-claim on nexus 3
 
 ```bash

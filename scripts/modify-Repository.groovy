@@ -1,6 +1,7 @@
 import org.sonatype.nexus.common.stateguard.InvalidStateException
 import org.sonatype.nexus.repository.config.Configuration
 import groovy.json.JsonSlurper
+import org.sonatype.nexus.repository.manager.RepositoryManager
 
 class Repository {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
@@ -51,12 +52,12 @@ def createConfiguration(Repository repo){
   def attributes = repo.properties.get("attributes")
   def online = getOnline(repo)
 
-  Configuration conf = new Configuration(
-    repositoryName: name,
-    recipeName: recipeName,
-    online: online,
-    attributes: attributes
-  )
+  def repoManager = container.lookup(RepositoryManager.class.name)
+  def conf = repoManager.newConfiguration()
+  conf.setRepositoryName(name)
+  conf.setRecipeName(recipeName)
+  conf.setOnline(online)
+  conf.setAttributes(attributes)
 
   return conf
 }
@@ -68,7 +69,8 @@ def getName(Repository repo){
 
 def getOnline(Repository repo){
   String online = repo.getProperties().get("online")
-  return online
+  return online.toBoolean()
+
 }
 
 def getRecipeName(Repository repo){

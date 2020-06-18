@@ -1,5 +1,5 @@
 import groovy.json.JsonSlurper
-import org.sonatype.nexus.repository.config.Configuration
+import org.sonatype.nexus.repository.manager.RepositoryManager
 import java.util.*
 
 class Repository {
@@ -46,12 +46,12 @@ def createConfiguration(Repository repo) {
   def online = getOnline(repo)
   Map<String, Object> attributes = repo.properties.get("attributes")
 
-  Configuration conf = new Configuration(
-    repositoryName: name,
-    recipeName: recipeName,
-    online: online,
-    attributes: attributes
-  )
+  def repoManager = container.lookup(RepositoryManager.class.name)
+  def conf = repoManager.newConfiguration()
+  conf.setRepositoryName(name)
+  conf.setRecipeName(recipeName)
+  conf.setOnline(online)
+  conf.setAttributes(attributes)
 
   return conf
 }
@@ -69,5 +69,5 @@ def getRecipeName(Repository repo) {
 
 def getOnline(Repository repo) {
   String online = repo.getProperties().get("online")
-  return online
+  return online.toBoolean()
 }
