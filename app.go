@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version of the application
-	Version = "0.3.1"
+	Version = "1.0.0"
 
 	// CommitID git sha1 hash
 	CommitID string
