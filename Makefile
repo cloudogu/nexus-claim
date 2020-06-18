@@ -141,7 +141,7 @@ ${XUNIT_XML}:
 static-analysis: static-analysis-${ENVIRONMENT}
 
 static-analysis-ci: ${TARGET_DIR}/static-analysis-cs.log
-	@if [ X"$${CI_PULL_REQUEST}" != X"" -a X"$${CI_PULL_REQUEST}" != X"null" ] ; then cat $< | CI_COMMIT=$(COMMIT_ID) reviewdog -f=checkstyle -ci="common" ; fi
+	@if [ X"$${CI_PULL_REQUEST}" != X"" -a X"$${CI_PULL_REQUEST}" != X"null" ] ; then cat $< | CI_COMMIT=$(COMMIT_ID) reviewdog -f=checkstyle -reporter="github-pr-review" ; fi
 
 static-analysis-local: ${TARGET_DIR}/static-analysis-cs.log ${TARGET_DIR}/static-analysis.log
 	@echo ""
