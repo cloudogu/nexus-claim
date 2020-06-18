@@ -12,11 +12,15 @@ node('docker') {
   }
 
 
-  docker.image('cloudogu/golang:1.10.2').inside("--volume ${WORKSPACE}:/go/src/${project}") {
-
+  docker.image('cloudogu/golang:1.12.10-stretch').inside("--volume ${WORKSPACE}:/go/src/${project}") {
+    withCredentials([
+      [$class: 'UsernamePasswordMultiBinding', credentialsId: 'sonarqube-gh', usernameVariable: 'USERNAME', passwordVariable: 'REVIEWDOG_GITHUB_API_TOKEN']
+    ]) {
+      sh 'git config --global url."https://$USERNAME:$REVIEWDOG_GITHUB_API_TOKEN@github.com".insteadOf "https://github.com"'
+    }
     stage('Build') {
       make 'clean'
-      make 'build'
+      make ''
       archiveArtifacts 'target/**/*.tar.gz'
     }
 
@@ -27,7 +31,9 @@ node('docker') {
 
     stage('Static Analysis') {
       def commitSha = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: githubCredentialsId, usernameVariable: 'USERNAME', passwordVariable: 'REVIEWDOG_GITHUB_API_TOKEN']]) {
+      withCredentials([
+        [$class: 'UsernamePasswordMultiBinding', credentialsId: githubCredentialsId, usernameVariable: 'USERNAME', passwordVariable: 'REVIEWDOG_GITHUB_API_TOKEN']
+      ]) {
         withEnv(["CI_PULL_REQUEST=${env.CHANGE_ID}", "CI_COMMIT=${commitSha}", "CI_REPO_OWNER=${repositoryOwner}", "CI_REPO_NAME=${repositoryName}"]) {
           make 'static-analysis'
         }

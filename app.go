@@ -1,18 +1,16 @@
-
-
 package main
 
 import (
-  "gopkg.in/urfave/cli.v2"
+	"gopkg.in/urfave/cli.v2"
 
-  "os"
+	"os"
 
-  "github.com/cloudogu/nexus-claim/cmd"
+	"github.com/cloudogu/nexus-claim/cmd"
 )
 
 var (
 	// Version of the application
-	Version = "0.0.0"
+	Version = "1.0.0"
 
 	// CommitID git sha1 hash
 	CommitID string
