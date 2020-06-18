@@ -39,7 +39,8 @@
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 
 ARTIFACT_ID=nexus-claim
-VERSION=0.3.0
+VERSION=0.3.1
+GO_ENVIRONMENT=GO111MODULE=on
 COMMIT_ID:=$(shell git rev-parse HEAD)
 
 
@@ -65,8 +66,12 @@ GO2XUNIT=go2xunit
 LINTFLAGS=--vendor --exclude="vendor" --exclude="_test.go"
 LINTFLAGS+=--disable-all --enable=errcheck --enable=vet --enable=golint
 LINTFLAGS+=--deadline=2m
-LDFLAGS=-ldflags "-linkmode external -extldflags -static -X main.Version=${VERSION} -X main.CommitID=${COMMIT_ID}"
-GLIDEFLAGS=
+LDFLAGS=-ldflags "-extldflags -static -X main.Version=${VERSION} -X main.CommitID=${COMMIT_ID}"
+
+include build/make/variables.mk
+include build/make/self-update.mk
+include build/make/clean.mk
+include build/make/dependencies-gomod.mk
 
 
 
@@ -83,12 +88,7 @@ endif
 #
 .DEFAULT_GOAL:=build
 
-.PHONY: dependencies
-dependencies: vendor
 
-vendor: go.mod go.sum
-	@echo "Installing dependencies using go modules..."
-	${GO_CALL} mod vendor
 
 # build steps: dependencies, compile, package
 #
@@ -115,14 +115,13 @@ generate:
 ${EXECUTABLE}: dependencies generate
 	@echo "compiling ..."
 	mkdir -p $(TARGET_DIR)
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -a -tags netgo ${LDFLAGS} -o $@
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo ${LDFLAGS} -o $@
 	@echo "... executable can be found at $@"
 
 ${PACKAGE}: ${EXECUTABLE}
 	cd ${TARGET_DIR} && tar cvzf ${ARTIFACT_ID}-${VERSION}.tar.gz ${ARTIFACT_ID}
 
 build: ${PACKAGE}
-
 
 # unit tests
 #
@@ -137,18 +136,12 @@ ${XUNIT_XML}:
 	cat ${TARGET_DIR}/unit-tests.log | go2xunit -output $@
 
 
-# integration tests, not yet
-#
-integration-test:
-	@echo "not yet implemented"
-
-
 # static analysis
 #
 static-analysis: static-analysis-${ENVIRONMENT}
 
 static-analysis-ci: ${TARGET_DIR}/static-analysis-cs.log
-	@if [ X"$${CI_PULL_REQUEST}" != X"" -a X"$${CI_PULL_REQUEST}" != X"null" ] ; then cat $< | CI_COMMIT=$(COMMIT_ID) reviewdog -f=checkstyle -ci="common" ; fi
+	@if [ X"$${CI_PULL_REQUEST}" != X"" -a X"$${CI_PULL_REQUEST}" != X"null" ] ; then cat $< | CI_COMMIT=$(COMMIT_ID) reviewdog -f=checkstyle -reporter="github-pr-review" ; fi
 
 static-analysis-local: ${TARGET_DIR}/static-analysis-cs.log ${TARGET_DIR}/static-analysis.log
 	@echo ""
@@ -168,21 +161,3 @@ ${TARGET_DIR}/static-analysis-cs.log:
 	@$(LINT) ${LINTFLAGS} --checkstyle ./... > $@ | true
 
 
-# clean lifecycle
-#
-clean:
-	rm -rf ${TARGET_DIR}
-
-dist-clean: clean
-	rm -rf node_modules
-	rm -rf public/vendor
-	rm -rf vendor
-	rm -rf npm-cache
-	rm -rf bower
-
-.PHONY: update-dependencies
-.PHONY: build dependencies info
-.PHONY: static-analysis static-analysis-ci static-analysis-local
-.PHONY: integration-test
-.PHONY: unit-test
-.PHONY: clean dist-clean

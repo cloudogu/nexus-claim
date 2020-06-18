@@ -1,5 +1,3 @@
-github.com/cloudogu/nexus-claim v0.3.0 h1:60TA+zdjls3T5QL1Eok+RKnw1T7K3zXmfjEUwFYrqFA=
-github.com/cloudogu/nexus-claim v0.3.0/go.mod h1:41EhAmPBhZBMvYhWMkoKKZrUcKHo8GNhir7vFZyVDkU=
 github.com/cloudogu/nexus-scripting v0.2.0 h1:Vr4e3wc4Gjtm3sE0WBv5LlY1CFujLfm8NVtHjf2pzhA=
 github.com/cloudogu/nexus-scripting v0.2.0/go.mod h1:bHChWIiBNlsXcatyPk0a9EquWqm2MErYVCRpVt3hCzo=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=

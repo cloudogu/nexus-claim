@@ -1,9 +1,8 @@
-module nexus-claim
+module github.com/cloudogu/nexus-claim
 
 go 1.14
 
 require (
-	github.com/cloudogu/nexus-claim v0.3.0
 	github.com/cloudogu/nexus-scripting v0.2.0
 	github.com/hashicorp/hcl v0.0.0-20170509225359-392dba7d905e
 	github.com/imdario/mergo v0.3.7
