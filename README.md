@@ -25,13 +25,14 @@ If in case of doubt, issue `nexus-claim --help` to get going.
 ## Testing with nexus 3
 
 1. Have a decent version of Golang installed
-1. Install Golang dependencies with `glide install`
+1. Install Golang dependencies with `go mod vendor && go mod tidy`
 1. Build the software in the `target/` directory
    - `make clean && make`
 1. Start up a local nexus
    - `docker run -d -p 8081:8081 --name nexus sonatype/nexus3`
+   - Access docker container and extract admin password `docker exec -it nexus sh` than `cat /nexus-data/admin.password`
 1. Plan a custom repository `.hcl` file
-   - `target/nexus-claim plan -i resources/nexus3/nexus_custom_example.hcl -o targetState.json`
+   - `target/nexus-claim --password "<password>" plan -i resources/nexus3/nexus_custom_example.hcl -o targetState.json`
    - this reads existing repositories from the nexus, changes from the given `.hcl` file will make up the target state as JSON
    - the target state is supposed to be created within the nexus-claim application
 1. Apply target state `.json` file to nexus
