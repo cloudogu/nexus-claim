@@ -1,3 +1,4 @@
+MAKEFILES_VERSION=9.2.1
 #
 # useful targets:
 #
