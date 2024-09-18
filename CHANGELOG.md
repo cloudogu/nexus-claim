@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-09-18
+### Changed
+- Relicense to AGPL-3.0-only
+
 ## [1.0.0] - 2020-06-18
 ### Changed
 - migrates from glide to go modules to be able to use recent go versions for compile 
