@@ -87,17 +87,23 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 		return errors.Wrapf(err, "failed to create modifyRepository.groovy from %s", repository.ID)
 	}
 
-	readAbleJSON, err := client.repositoryToJSON(repository)
+	enrichedRepository := client.addRepositoryNamesFromID(repository)
+	enrichedRepository, err = client.addRepoInfosFromRecipeName(enrichedRepository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse to JSON from repository %s to modify it", repository.ID)
+		return errors.Wrapf(err, "failed to modify repository %s", enrichedRepository.ID)
+	}
+
+	readAbleJSON, err := client.repositoryToJSON(enrichedRepository)
+	if err != nil {
+		return errors.Wrapf(err, "failed to parse to JSON from repository %s to modify it", enrichedRepository.ID)
 	}
 
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
-		return errors.Wrapf(err, "failed to execute modifyRepository.groovy with %s", string(repository.ID))
+		return errors.Wrapf(err, "failed to execute modifyRepository.groovy with %s", string(enrichedRepository.ID))
 	}
 	if !(output == "null") {
-		return errors.Errorf("modifyRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
+		return errors.Errorf("modifyRepository.groovy with repository %s executed but an error occured: %s", enrichedRepository.ID, output)
 	}
 
 	return nil
