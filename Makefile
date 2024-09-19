@@ -40,7 +40,7 @@ MAKEFILES_VERSION=9.2.1
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 
 ARTIFACT_ID=nexus-claim
-VERSION=1.0.0
+VERSION=1.1.0
 GO_ENVIRONMENT=GO111MODULE=on
 COMMIT_ID:=$(shell git rev-parse HEAD)
 
