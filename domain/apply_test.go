@@ -1,11 +1,12 @@
 package domain_test
 
 import (
-  "testing"
+	"fmt"
+	"testing"
 
-  "github.com/cloudogu/nexus-claim/domain"
-  "github.com/stretchr/testify/assert"
-  "github.com/stretchr/testify/require"
+	"github.com/cloudogu/nexus-claim/domain"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApplyPlanWithEmptyPlan(t *testing.T) {
