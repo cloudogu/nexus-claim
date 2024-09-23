@@ -19,6 +19,7 @@ node('docker') {
 
   stage('Checkout') {
     checkout scm
+    make 'clean'
   }
 
   new Docker(this)
