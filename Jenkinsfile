@@ -5,6 +5,11 @@ import com.cloudogu.ces.cesbuildlib.*
 
 goVersion = "1.23"
 
+// Configuration of branches
+productionReleaseBranch = "master"
+developmentBranch = "develop"
+currentBranch = "${env.BRANCH_NAME}"
+
 node('docker') {
 
   repositoryOwner = 'cloudogu'
