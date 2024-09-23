@@ -1,22 +1,22 @@
 package infrastructure
 
 import (
-	"net/http"
+  "fmt"
+  "net/http"
 
-	"io/ioutil"
+  "io/ioutil"
 
-	"encoding/json"
+  "encoding/json"
 
-	"log"
+  "log"
 
-	"io"
+  "io"
 
-	"bytes"
+  "bytes"
 
-	"reflect"
+  "reflect"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/pkg/errors"
+  "github.com/cloudogu/nexus-claim/domain"
 )
 
 const (
@@ -45,7 +45,7 @@ func (client *httpNexusAPIClient) Get(repositoryType domain.RepositoryType, id d
 
 	response, err := client.httpClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrapf(err, "get request for repository %s failed", id)
+		return nil, fmt.Errorf("get request for repository %s failed: %w", id, err)
 	}
 	defer client.closeAndLogOnError(response.Body)
 
@@ -81,7 +81,7 @@ func (client *httpNexusAPIClient) createReadRequest(url string) (*http.Request, 
 func (client *httpNexusAPIClient) createRequest(method string, url string, body io.Reader) (*http.Request, error) {
 	request, err := http.NewRequest(method, url, body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create %s request for %s", method, url)
+		return nil, fmt.Errorf("failed to create %s request for %s: %w", method, url, err)
 	}
 
 	if client.username != "" {
@@ -109,13 +109,13 @@ func (client *httpNexusAPIClient) isStatusOK(response *http.Response) bool {
 func (client *httpNexusAPIClient) parseRepositoryResponse(response *http.Response) (*domain.Repository, error) {
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse response body")
+		return nil, fmt.Errorf("failed to parse response body: %w", err)
 	}
 
 	dto := newRepositoryDTO()
 	err = json.Unmarshal(content, dto)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal response body")
+		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
 	return dto.to(), nil
@@ -169,7 +169,7 @@ func (client *httpNexusAPIClient) Create(repository domain.Repository) error {
 
 	response, err := client.httpClient.Do(request)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create repository %s", repository.ID)
+		return fmt.Errorf("failed to create repository %s: %w", repository.ID, err)
 	}
 
 	if response.StatusCode != 201 {
@@ -207,7 +207,7 @@ func (client *httpNexusAPIClient) createWriteRequest(method, url string, body in
 func (client *httpNexusAPIClient) createJSONBody(object interface{}) (io.Reader, error) {
 	data, err := json.Marshal(object)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal object")
+		return nil, fmt.Errorf("failed to marshal object: %w", err)
 	}
 
 	return bytes.NewBuffer(data), nil
@@ -222,7 +222,7 @@ func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
 
 	response, err := client.httpClient.Do(request)
 	if err != nil {
-		return errors.Wrapf(err, "failed to modify repository %s", repository.ID)
+		return fmt.Errorf("failed to modify repository %s: %w", repository.ID, err)
 	}
 
 	if response.StatusCode != 200 {
@@ -233,7 +233,7 @@ func (client *httpNexusAPIClient) Modify(repository domain.Repository) error {
 }
 
 func (client *httpNexusAPIClient) statusCodeError(statusCode int) error {
-	return errors.Errorf("invalid status code %d", statusCode)
+	return fmt.Errorf("invalid status code %d", statusCode)
 }
 
 func (client *httpNexusAPIClient) Remove(repository domain.Repository) error {
@@ -246,7 +246,7 @@ func (client *httpNexusAPIClient) Remove(repository domain.Repository) error {
 
 	response, err := client.httpClient.Do(request)
 	if err != nil {
-		return errors.Wrapf(err, "failed to remove repository %s", id)
+		return fmt.Errorf("failed to remove repository %s: %w", id, err)
 	}
 
 	if response.StatusCode != 204 {

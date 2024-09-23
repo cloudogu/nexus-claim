@@ -1,12 +1,11 @@
 package domain_test
 
 import (
-	"testing"
+  "testing"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/stretchr/testify/assert"
+  "github.com/stretchr/testify/require"
 )
 
 func TestApplyPlanWithEmptyPlan(t *testing.T) {
@@ -21,7 +20,7 @@ func TestApplyPlanWithErrorOnCreate(t *testing.T) {
 	plan := &domain.Plan{}
 	plan.Create(domain.Repository{ID: domain.RepositoryID("c1")})
 	writer := newMockNexusAPIWriter()
-	writer.err = errors.New("server down")
+	writer.err = fmt.Errorf("server down")
 	err := domain.ApplyPlan(writer, plan)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "server down")
@@ -32,7 +31,7 @@ func TestApplyPlanWithErrorOnRemove(t *testing.T) {
 	plan := &domain.Plan{}
 	plan.Remove(domain.Repository{ID: domain.RepositoryID("r1")})
 	writer := newMockNexusAPIWriter()
-	writer.err = errors.New("server down")
+	writer.err = fmt.Errorf("server down")
 	err := domain.ApplyPlan(writer, plan)
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "server down")

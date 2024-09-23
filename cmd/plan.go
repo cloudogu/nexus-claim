@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"io/ioutil"
+  "fmt"
+  "io/ioutil"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/cloudogu/nexus-claim/infrastructure"
-	"github.com/pkg/errors"
-	"gopkg.in/urfave/cli.v2"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/cloudogu/nexus-claim/infrastructure"
+  "gopkg.in/urfave/cli.v2"
 )
 
 // init registers the subcommand plan to the application
@@ -72,7 +72,7 @@ func createFileModelDAO(c *cli.Context) domain.ModelDAO {
 func (app *Application) writePlan(output string, plan *domain.Plan) error {
 	bytes, err := infrastructure.SerializePlan(plan)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal plan")
+		return fmt.Errorf("failed to marshal plan: %w", err)
 	}
 
 	if output == "-" {
@@ -85,7 +85,7 @@ func (app *Application) writePlan(output string, plan *domain.Plan) error {
 func (app *Application) writePlanToOutput(plan []byte) error {
 	_, err := app.Output.Write(plan)
 	if err != nil {
-		return errors.Wrap(err, "failed to write plan to output")
+		return fmt.Errorf("failed to write plan to output: %w", err)
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func (app *Application) writePlanToOutput(plan []byte) error {
 func (app *Application) writePlanToFile(file string, plan []byte) error {
 	err := ioutil.WriteFile(file, plan, 0644)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write plan to %s", file)
+		return fmt.Errorf("failed to write plan to %s: %w", file, err)
 	}
 	return nil
 }
