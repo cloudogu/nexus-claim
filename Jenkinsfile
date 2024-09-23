@@ -52,6 +52,15 @@ void make(goal) {
   sh "cd /go/src/${project} && make ${goal}"
 }
 
+void gitWithCredentials(String command) {
+    withCredentials([usernamePassword(credentialsId: 'cesmarvin', usernameVariable: 'GIT_AUTH_USR', passwordVariable: 'GIT_AUTH_PSW')]) {
+        sh(
+            script: "git -c credential.helper=\"!f() { echo username='\$GIT_AUTH_USR'; echo password='\$GIT_AUTH_PSW'; }; f\" " + command,
+            returnStdout: true
+        )
+    }
+}
+
 void stageStaticAnalysisReviewDog() {
     def commitSha = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
 
