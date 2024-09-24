@@ -1,9 +1,7 @@
 package domain
 
 import (
-	"fmt"
-
-	"github.com/pkg/errors"
+  "fmt"
 )
 
 // ActionType describes the type of the action create, modify or remove
@@ -60,7 +58,7 @@ func (action *createAction) ToString() string {
 func (action *createAction) Execute(writer NexusAPIWriter) error {
 	err := writer.Create(action.Repository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create repository %s", action.Repository.ID)
+		return fmt.Errorf("failed to create repository %s: %w", action.Repository.ID, err)
 	}
 	return nil
 }
@@ -78,7 +76,7 @@ func (action *modifyAction) ToString() string {
 func (action *modifyAction) Execute(writer NexusAPIWriter) error {
 	err := writer.Modify(action.Repository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to modify repository %s", action.Repository.ID)
+		return fmt.Errorf("failed to modify repository %s: %w", action.Repository.ID, err)
 	}
 	return nil
 }
@@ -96,7 +94,7 @@ func (action *removeAction) ToString() string {
 func (action *removeAction) Execute(writer NexusAPIWriter) error {
 	err := writer.Remove(action.Repository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to remove repository %s", action.Repository.ID)
+		return fmt.Errorf("failed to remove repository %s: %w", action.Repository.ID, err)
 	}
 	return nil
 }

@@ -1,10 +1,10 @@
 package infrastructure
 
 import (
-	"encoding/json"
+  "encoding/json"
+  "fmt"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/pkg/errors"
+  "github.com/cloudogu/nexus-claim/domain"
 )
 
 // SerializePlan is used to serialize a plan to a format which can be written to any kind of storage
@@ -15,7 +15,7 @@ func SerializePlan(plan *domain.Plan) ([]byte, error) {
 	}
 	serializedPlan, err := json.Marshal(jp)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize plan")
+		return nil, fmt.Errorf("failed to serialize plan: %w", err)
 	}
 	return serializedPlan, nil
 }
@@ -25,7 +25,7 @@ func DeserializePlan(serializedPlan []byte) (*domain.Plan, error) {
 	jp := &jsonPlan{}
 	err := json.Unmarshal(serializedPlan, &jp)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to deserialize plan")
+		return nil, fmt.Errorf("failed to deserialize plan: %w", err)
 	}
 
 	plan := &domain.Plan{}

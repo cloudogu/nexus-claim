@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2024-09-24
+### Fixed
+- Fixed the repository modify script. It did not work before and should now update repositories
+
 ## [1.1.0] - 2024-09-18
 ### Changed
 - Relicense to AGPL-3.0-only

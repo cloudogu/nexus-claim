@@ -1,18 +1,17 @@
 package cmd
 
 import (
-	"sort"
+  "sort"
 
-	"io"
+  "io"
 
-	"os"
+  "os"
 
-	"fmt"
+  "fmt"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/cloudogu/nexus-claim/infrastructure"
-	"github.com/pkg/errors"
-	"gopkg.in/urfave/cli.v2"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/cloudogu/nexus-claim/infrastructure"
+  "gopkg.in/urfave/cli.v2"
 )
 
 // Application holds all command actions and gives context to them.
@@ -84,15 +83,15 @@ func (app *Application) GlobalFlags() []cli.Flag {
 			EnvVar: "NEXUS_PASSWORD",
 		},
 		cli.IntFlag{
-			Name:   "timeout",
-			Value:  30,
-			Usage:  "Timeout for HTTP client requests",
+			Name:  "timeout",
+			Value: 30,
+			Usage: "Timeout for HTTP client requests",
 		},
 		cli.BoolFlag{
-		  Name:   "nexus2",
-		  Usage:  "use this flag to use nexus-claim with nexus 2",
-      EnvVar: "NEXUS_V2",
-    },
+			Name:   "nexus2",
+			Usage:  "use this flag to use nexus-claim with nexus 2",
+			EnvVar: "NEXUS_V2",
+		},
 	}
 }
 
@@ -101,13 +100,13 @@ func (app *Application) createNexusAPIClient(c *cli.Context) domain.NexusAPIClie
 	if app.nexusAPIClient != nil {
 
 		return app.nexusAPIClient
-	} else if c.Bool("nexus2"){
-    return infrastructure.NewHTTPNexusAPIClient(
-      c.GlobalString("server"),
-      c.GlobalString("username"),
-      c.GlobalString("password"),
-    )
-  }
+	} else if c.Bool("nexus2") {
+		return infrastructure.NewHTTPNexusAPIClient(
+			c.GlobalString("server"),
+			c.GlobalString("username"),
+			c.GlobalString("password"),
+		)
+	}
 
 	return infrastructure.NewNexus3APIClient(
 		c.GlobalString("server"),
@@ -130,7 +129,7 @@ func (app *Application) printPlan(plan *domain.Plan) error {
 func (app *Application) printAction(action domain.Action) error {
 	_, err := app.Output.Write([]byte(action.ToString() + "\n"))
 	if err != nil {
-		return errors.Wrap(err, "failed to write action")
+		return fmt.Errorf("failed to write action: %w", err)
 	}
 	return err
 }

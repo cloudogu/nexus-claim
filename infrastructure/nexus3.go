@@ -4,9 +4,9 @@ package infrastructure
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/cloudogu/nexus-claim/domain"
 	"github.com/cloudogu/nexus-scripting/manager"
-	"github.com/pkg/errors"
 	"reflect"
 	"strings"
 )
@@ -31,12 +31,12 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 
 	script, err := client.manager.Create("readRepository", READ_REPOSITORY)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create readRepository.groovy with %s", stringID)
+		return nil, fmt.Errorf("failed to create readRepository.groovy with %s: %w", stringID, err)
 	}
 
 	jsonData, err := script.ExecuteWithStringPayload(stringID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to execute readRepository.groovy with %s", stringID)
+		return nil, fmt.Errorf("failed to execute readRepository.groovy with %s: %w", stringID, err)
 	}
 
 	if client.isStatusNotFound(jsonData) {
@@ -45,7 +45,7 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 
 	repository, err := client.JSONToRepository(jsonData)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse JSON file of %s", stringID)
+		return nil, fmt.Errorf("failed to parse JSON file of %s: %w", stringID, err)
 	}
 
 	return repository, nil
@@ -55,27 +55,27 @@ func (client *nexus3APIClient) Get(repositoryType domain.RepositoryType, id doma
 func (client *nexus3APIClient) Create(repository domain.Repository) error {
 	script, err := client.manager.Create("createRepository", CREATE_REPOSITORY)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create createRepository.groovy from %s", repository.ID)
+		return fmt.Errorf("failed to create createRepository.groovy from %s: %w", repository.ID, err)
 	}
 
 	enrichedRepository := client.addRepositoryNamesFromID(repository)
 	enrichedRepository, err = client.addRepoInfosFromRecipeName(enrichedRepository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create repository %s", enrichedRepository.ID)
+		return fmt.Errorf("failed to create repository %s: %w", enrichedRepository.ID, err)
 	}
 
 	readAbleJSON, err := client.repositoryToJSON(enrichedRepository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse to JSON from repository %s to create it", enrichedRepository.ID)
+		return fmt.Errorf("failed to parse to JSON from repository %s to create it: %w", enrichedRepository.ID, err)
 	}
 
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
-		return errors.Wrapf(err, "failed to execute createRepository.groovy with %s", enrichedRepository.ID)
+		return fmt.Errorf("failed to execute createRepository.groovy with %s: %w", enrichedRepository.ID, err)
 	}
 
 	if !(output == "null") {
-		return errors.Errorf("createRepository.groovy with repository %s executed but an error occured: %s", enrichedRepository.ID, output)
+		return fmt.Errorf("createRepository.groovy with repository %s executed but an error occured: %s", enrichedRepository.ID, output)
 	}
 
 	return nil
@@ -84,20 +84,26 @@ func (client *nexus3APIClient) Create(repository domain.Repository) error {
 func (client *nexus3APIClient) Modify(repository domain.Repository) error {
 	script, err := client.manager.Create("modifyRepository", MODIFY_REPOSITORY)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create modifyRepository.groovy from %s", repository.ID)
+		return fmt.Errorf("failed to create modifyRepository.groovy from %s: %w", repository.ID, err)
 	}
 
-	readAbleJSON, err := client.repositoryToJSON(repository)
+	enrichedRepository := client.addRepositoryNamesFromID(repository)
+	enrichedRepository, err = client.addRepoInfosFromRecipeName(enrichedRepository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse to JSON from repository %s to modify it", repository.ID)
+		return fmt.Errorf("failed to modify repository %s: %w", enrichedRepository.ID, err)
+	}
+
+	readAbleJSON, err := client.repositoryToJSON(enrichedRepository)
+	if err != nil {
+		return fmt.Errorf("failed to parse to JSON from repository %s to modify it: %w", enrichedRepository.ID, err)
 	}
 
 	output, err := script.ExecuteWithStringPayload(readAbleJSON)
 	if err != nil {
-		return errors.Wrapf(err, "failed to execute modifyRepository.groovy with %s", string(repository.ID))
+		return fmt.Errorf("failed to execute modifyRepository.groovy with %s: %w", string(enrichedRepository.ID), err)
 	}
 	if !(output == "null") {
-		return errors.Errorf("modifyRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
+		return fmt.Errorf("modifyRepository.groovy with repository %s executed but an error occured: %s", enrichedRepository.ID, output)
 	}
 
 	return nil
@@ -140,15 +146,15 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
 	stringID := string(repository.ID)
 	script, err := client.manager.Create("deleteRepository", DELETE_REPOSITORY)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create deleteRepository.groovy from %s", repository.ID)
+		return fmt.Errorf("failed to create deleteRepository.groovy from %s: %w", repository.ID, err)
 	}
 
 	output, err := script.ExecuteWithStringPayload(stringID)
 	if err != nil {
-		return errors.Wrapf(err, "failed to execute deleteRepository.groovy with %s", string(repository.ID))
+		return fmt.Errorf("failed to execute deleteRepository.groovy with %s: %w", string(repository.ID), err)
 	}
 	if !(output == "null") {
-		return errors.Errorf("deleteRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
+		return fmt.Errorf("deleteRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
 	}
 
 	return nil
@@ -162,7 +168,7 @@ func (client *nexus3APIClient) repositoryToJSON(repository domain.Repository) (s
 
 	jsonData, err := json.Marshal(repository.Properties)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to marshal the json data")
+		return "", fmt.Errorf("failed to marshal the json data: %w", err)
 	}
 	readAbleJSON := string(jsonData)
 
@@ -174,7 +180,7 @@ func (client *nexus3APIClient) JSONToRepository(jsonData string) (*domain.Reposi
 	dto := newNexus3RepositoryDTO()
 	dto, err := dto.from(jsonData)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error occurred during parsing JSON data into a Nexus3DPO")
+		return nil, fmt.Errorf("Error occurred during parsing JSON data into a Nexus3DPO: %w", err)
 	}
 	return dto.to(), nil
 }
@@ -192,7 +198,7 @@ func (dto *nexus3RepositoryDTO) from(jsonData string) (*nexus3RepositoryDTO, err
 	var jsonMap map[string]interface{}
 	err := json.Unmarshal([]byte(jsonData), &jsonMap)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error occured at unmarshalling jsonData")
+		return nil, fmt.Errorf("Error occured at unmarshalling jsonData: %w", err)
 	}
 
 	dto.Data = jsonMap

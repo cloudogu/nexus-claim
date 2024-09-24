@@ -1,79 +1,37 @@
-import org.sonatype.nexus.common.stateguard.InvalidStateException
-import org.sonatype.nexus.repository.config.Configuration
 import groovy.json.JsonSlurper
-import org.sonatype.nexus.repository.manager.RepositoryManager
+import org.sonatype.nexus.repository.Repository
 
-class Repository {
+class RepositoryMap {
   Map<String, Map<String, Object>> properties = new HashMap<String, Object>()
 }
 
 if (args != "") {
-
-  def repo = convertJsonFileToRepo(args)
-  def name = getName(repo)
-  def conf = createConfiguration(repo)
-
-  def output = modifyRepository(name, conf)
-  return output
-}
-
-def modifyRepository(String repositoryID, Configuration configuration) {
-
-  repository.getRepositoryManager().get(repositoryID).stop()
+  RepositoryMap repoMap = convertJsonFileToRepoMap(args)
+  Repository repo = getRepositoryFromJsonData(repoMap)
+  def conf = repo.getConfiguration().copy()
+  def attributes = repoMap.properties.get("attributes")
+  conf.setAttributes(attributes)
 
   try {
-    repository.getRepositoryManager().get(repositoryID).update(configuration)
+    repository.getRepositoryManager().update(conf)
   }
   catch (Exception e) {
     return e
-  }
-  finally {
-    repository.getRepositoryManager().get(repositoryID).start()
   }
 
   return null
 }
 
-def convertJsonFileToRepo(String jsonData) {
+Repository getRepositoryFromJsonData(RepositoryMap repoMap){
+  return repository.getRepositoryManager().get(repoMap.properties.get("repositoryName"))
+}
 
+RepositoryMap convertJsonFileToRepoMap(String jsonData) {
   def inputJson = new JsonSlurper().parseText(jsonData)
-  Repository repo = new Repository()
+  RepositoryMap repo = new RepositoryMap()
   inputJson.each {
     repo.properties.put(it.key, it.value)
   }
 
   return repo
-}
-
-def createConfiguration(Repository repo){
-
-  def name = getName(repo)
-  def recipeName = getRecipeName(repo)
-  def attributes = repo.properties.get("attributes")
-  def online = getOnline(repo)
-
-  def repoManager = container.lookup(RepositoryManager.class.name)
-  def conf = repoManager.newConfiguration()
-  conf.setRepositoryName(name)
-  conf.setRecipeName(recipeName)
-  conf.setOnline(online)
-  conf.setAttributes(attributes)
-
-  return conf
-}
-
-def getName(Repository repo){
-  String name = repo.getProperties().get("repositoryName")
-  return name
-}
-
-def getOnline(Repository repo){
-  String online = repo.getProperties().get("online")
-  return online.toBoolean()
-
-}
-
-def getRecipeName(Repository repo){
-  String recipeName = repo.getProperties().get("recipeName")
-  return recipeName
 }

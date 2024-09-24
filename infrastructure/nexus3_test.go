@@ -119,6 +119,7 @@ func TestNexus3APIClient_Modify(t *testing.T) {
 
 	properties := make(domain.Properties)
 	properties["id"] = "testRepo"
+	properties["recipeName"] = "recipe-name"
 	repository := domain.Repository{
 		ID:         domain.RepositoryID("testRepo2"),
 		Properties: properties,

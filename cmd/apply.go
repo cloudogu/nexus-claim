@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"os"
+  "fmt"
+  "os"
 
-	"io/ioutil"
+  "io/ioutil"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/cloudogu/nexus-claim/infrastructure"
-	"github.com/pkg/errors"
-	cli "gopkg.in/urfave/cli.v2"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/cloudogu/nexus-claim/infrastructure"
+  cli "gopkg.in/urfave/cli.v2"
 )
 
 // init registers the subcommand apply to the application
@@ -45,7 +45,7 @@ func (app *Application) apply(c *cli.Context) error {
 	nexusAPIClient := app.createNexusAPIClient(c)
 	err = domain.ApplyPlan(nexusAPIClient, plan)
 	if err != nil {
-		return errors.Wrapf(err, "failed to execute plan")
+		return fmt.Errorf("failed to execute plan: %w", err)
 	}
 
 	return nil

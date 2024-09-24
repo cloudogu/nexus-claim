@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/imdario/mergo"
 	"github.com/kr/pretty"
-	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -58,7 +57,7 @@ func (repository Repository) Merge(other Repository) (Repository, error) {
 
 	err := mergo.Merge(&properties, other.Properties, mergo.WithOverride)
 	if err != nil {
-		return repository, errors.Wrap(err, "failed to merge repository properties")
+		return repository, fmt.Errorf("failed to merge repository properties: %w", err)
 	}
 
 	return Repository{ID: repository.ID, Properties: properties, Type: repository.Type}, nil
@@ -84,7 +83,7 @@ func (repository Repository) Clone() Repository {
 func (repository Repository) GetRecipeName() (string, error) {
 	recipeName := repository.Properties[repositoryRecipeNameKey]
 	if recipeName == nil {
-		return "", errors.New("could not find property 'recipeName' in repository " + string(repository.ID))
+		return "", fmt.Errorf("could not find property 'recipeName' in repository " + string(repository.ID))
 	}
 
 	return recipeName.(string), nil
