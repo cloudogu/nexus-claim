@@ -1,3 +1,4 @@
+MAKEFILES_VERSION=9.2.1
 #
 # useful targets:
 #
@@ -50,7 +51,6 @@ TARGET_DIR=target
 # make target files
 EXECUTABLE=${TARGET_DIR}/${ARTIFACT_ID}
 PACKAGE=${TARGET_DIR}/${ARTIFACT_ID}-${VERSION}.tar.gz
-XUNIT_XML=${TARGET_DIR}/unit-tests.xml
 
 # deployment
 APT_API_BASE_URL=https://apt-api.cloudogu.com/api
@@ -58,9 +58,6 @@ APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
 # tools
 LINT=gometalinter
-
-GO2XUNIT=go2xunit
-
 
 # flags
 LINTFLAGS=--vendor --exclude="vendor" --exclude="_test.go"
@@ -72,6 +69,8 @@ include build/make/variables.mk
 include build/make/self-update.mk
 include build/make/clean.mk
 include build/make/dependencies-gomod.mk
+include build/make/test-unit.mk
+include build/make/static-analysis.mk
 
 
 
@@ -122,42 +121,3 @@ ${PACKAGE}: ${EXECUTABLE}
 	cd ${TARGET_DIR} && tar cvzf ${ARTIFACT_ID}-${VERSION}.tar.gz ${ARTIFACT_ID}
 
 build: ${PACKAGE}
-
-# unit tests
-#
-unit-test: ${XUNIT_XML}
-
-${XUNIT_XML}:
-	mkdir -p $(TARGET_DIR)
-	go test -v $(PACKAGES) | tee ${TARGET_DIR}/unit-tests.log
-	@if grep '^FAIL' ${TARGET_DIR}/unit-tests.log; then \
-		exit 1; \
-	fi
-	cat ${TARGET_DIR}/unit-tests.log | go2xunit -output $@
-
-
-# static analysis
-#
-static-analysis: static-analysis-${ENVIRONMENT}
-
-static-analysis-ci: ${TARGET_DIR}/static-analysis-cs.log
-	@if [ X"$${CI_PULL_REQUEST}" != X"" -a X"$${CI_PULL_REQUEST}" != X"null" ] ; then cat $< | CI_COMMIT=$(COMMIT_ID) reviewdog -f=checkstyle -reporter="github-pr-review" ; fi
-
-static-analysis-local: ${TARGET_DIR}/static-analysis-cs.log ${TARGET_DIR}/static-analysis.log
-	@echo ""
-	@echo "differences to develop branch:"
-	@echo ""
-	@cat $< | reviewdog -f checkstyle -diff "git diff develop"
-
-${TARGET_DIR}/static-analysis.log:
-	@mkdir -p ${TARGET_DIR}
-	@echo ""
-	@echo "complete static analysis:"
-	@echo ""
-	@$(LINT) ${LINTFLAGS} ./... | tee $@
-
-${TARGET_DIR}/static-analysis-cs.log:
-	@mkdir -p ${TARGET_DIR}
-	@$(LINT) ${LINTFLAGS} --checkstyle ./... > $@ | true
-
-

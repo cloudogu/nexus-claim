@@ -1,18 +1,18 @@
 package infrastructure
 
 import (
-	"os"
+  "fmt"
+  "os"
 
-	"io/ioutil"
+  "io/ioutil"
 
-	"strings"
+  "strings"
 
-	"reflect"
+  "reflect"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/hashicorp/hcl"
-	"github.com/hashicorp/hcl/hcl/ast"
-	"github.com/pkg/errors"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/hashicorp/hcl"
+  "github.com/hashicorp/hcl/hcl/ast"
 )
 
 // NewFileModelDAO creates a new file based ModelDAO
@@ -49,17 +49,17 @@ func (dao *fileModelDAO) Get() (domain.Model, error) {
 
 func (dao *fileModelDAO) parseFile() (*ast.File, error) {
 	if _, err := os.Stat(dao.path); os.IsNotExist(err) {
-		return nil, errors.Wrapf(err, "could not find model at %s", dao.path)
+		return nil, fmt.Errorf("could not find model at %s: %w", dao.path, err)
 	}
 
 	bytes, err := ioutil.ReadFile(dao.path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read file %s", dao.path)
+		return nil, fmt.Errorf("failed to read file %s: %w", dao.path, err)
 	}
 
 	file, err := hcl.ParseBytes(bytes)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse file %s", dao.path)
+		return nil, fmt.Errorf("failed to parse file %s: %w", dao.path, err)
 	}
 
 	return file, nil
@@ -78,7 +78,7 @@ func (dao *fileModelDAO) findNodes(file *ast.File, nodeName string) ([]*ast.Obje
 	if objectList, ok := file.Node.(*ast.ObjectList); ok {
 		return objectList.Filter(nodeName).Items, nil
 	}
-	return nil, errors.Errorf("file does not start with an objectlist")
+	return nil, fmt.Errorf("file does not start with an objectlist")
 }
 
 func (dao *fileModelDAO) parseNodes(nodes []*ast.ObjectItem, repositoryType domain.RepositoryType) ([]domain.ModelRepository, error) {
@@ -123,14 +123,14 @@ func (dao *fileModelDAO) parseRepositoryNode(repositoryNode *ast.ObjectItem) (do
 func (dao *fileModelDAO) parseID(repositoryNode *ast.ObjectItem) (domain.RepositoryID, error) {
 	keyCount := len(repositoryNode.Keys)
 	if keyCount < 0 || keyCount > 1 {
-		return "", errors.New("found repository with more or less than one id")
+		return "", fmt.Errorf("found repository with more or less than one id")
 	}
 
 	key := repositoryNode.Keys[0]
 
 	id := strings.Trim(key.Token.Text, "\"")
 	if id == "" {
-		return "", errors.New("repository with empty id found")
+		return "", fmt.Errorf("repository with empty id found")
 	}
 
 	return domain.RepositoryID(id), nil
@@ -141,7 +141,7 @@ func (dao *fileModelDAO) parseProperties(id domain.RepositoryID, repositoryNode 
 
 	err := hcl.DecodeObject(&properties, repositoryNode.Val)
 	if err != nil {
-		return properties, errors.Wrapf(err, "failed to parse properties of repository %s", id)
+		return properties, fmt.Errorf("failed to parse properties of repository %s: %w", id, err)
 	}
 
 	return properties, nil
@@ -158,15 +158,15 @@ func (dao *fileModelDAO) parseState(repositoryID domain.RepositoryID, properties
 			case domain.StateAbsent:
 				state = domain.StateAbsent
 			default:
-				return state, errors.Errorf("state %s of repository %s is not a valid state", stateString, repositoryID)
+				return state, fmt.Errorf("state %s of repository %s is not a valid state", stateString, repositoryID)
 			}
 
 		} else {
-			return state, errors.Errorf("state of repository %s is not a string", repositoryID)
+			return state, fmt.Errorf("state of repository %s is not a string", repositoryID)
 		}
 
 	} else {
-		return state, errors.Errorf("repository %s has no _state field", repositoryID)
+		return state, fmt.Errorf("repository %s has no _state field", repositoryID)
 	}
 
 	return state, nil

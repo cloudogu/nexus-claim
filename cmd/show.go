@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"io/ioutil"
+  "fmt"
+  "io/ioutil"
 
-	"github.com/cloudogu/nexus-claim/infrastructure"
-	"github.com/pkg/errors"
-	cli "gopkg.in/urfave/cli.v2"
+  "github.com/cloudogu/nexus-claim/infrastructure"
+  cli "gopkg.in/urfave/cli.v2"
 )
 
 // init registers the subcommand show to the application
@@ -25,17 +25,17 @@ func createShowCommand(actionFunc cli.ActionFunc) cli.Command {
 func (app *Application) show(c *cli.Context) error {
 	planFile := c.Args().First()
 	if planFile == "" {
-		return errors.New("usage: nexus-claim show path/to/plan.json")
+		return fmt.Errorf("usage: nexus-claim show path/to/plan.json")
 	}
 
 	serializedPlan, err := ioutil.ReadFile(planFile)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read plan file %s", planFile)
+		return fmt.Errorf("failed to read plan file %s: %w", planFile, err)
 	}
 
 	plan, err := infrastructure.DeserializePlan(serializedPlan)
 	if err != nil {
-		return errors.Wrapf(err, "failed to unmarshal plan file %s", planFile)
+		return fmt.Errorf("failed to unmarshal plan file %s: %w", planFile, err)
 	}
 
 	err = app.printPlan(plan)

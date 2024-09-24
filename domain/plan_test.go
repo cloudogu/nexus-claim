@@ -1,12 +1,12 @@
 package domain_test
 
 import (
-	"testing"
+  "fmt"
+  "testing"
 
-	"github.com/cloudogu/nexus-claim/domain"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+  "github.com/cloudogu/nexus-claim/domain"
+  "github.com/stretchr/testify/assert"
+  "github.com/stretchr/testify/require"
 )
 
 func TestCreatePlanWithEmptyModel(t *testing.T) {
@@ -20,7 +20,7 @@ func TestCreatePlanWithEmptyModel(t *testing.T) {
 }
 
 func TestCreatePlanFailedToReadModel(t *testing.T) {
-	dao := &mockModelDAO{domain.Model{}, errors.New("-- no --")}
+	dao := &mockModelDAO{domain.Model{}, fmt.Errorf("-- no --")}
 	client := &mockNexusAPIClient{}
 
 	_, err := domain.CreatePlan(dao, client)
@@ -32,7 +32,7 @@ func TestCreatePlanFailedToReadFromNexusAPI(t *testing.T) {
 	model := createTestModel()
 
 	dao := &mockModelDAO{model: model}
-	client := &mockNexusAPIClient{err: errors.New("api down")}
+	client := &mockNexusAPIClient{err: fmt.Errorf("api down")}
 
 	_, err := domain.CreatePlan(dao, client)
 	require.NotNil(t, err)

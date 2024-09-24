@@ -1,6 +1,8 @@
 package domain
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+)
 
 // Plan is a set of actions which must be done to sync the model with nexus
 type Plan struct {
@@ -34,7 +36,7 @@ func (plan *Plan) Create(repository Repository) {
 func (plan *Plan) Merge(clientRepository Repository, modelRepository Repository) error {
 	mergedRepository, err := clientRepository.Merge(modelRepository)
 	if err != nil {
-		return errors.Wrapf(err, "failed to merge repository %s", modelRepository.ID)
+		return fmt.Errorf("failed to merge repository %s: %w", modelRepository.ID, err)
 	}
 	plan.Modify(mergedRepository)
 	return nil
@@ -73,7 +75,7 @@ func (plan *Plan) Execute(writer NexusAPIWriter) error {
 func CreatePlan(modelDAO ModelDAO, reader NexusAPIReader) (*Plan, error) {
 	model, err := modelDAO.Get()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read model")
+		return nil, fmt.Errorf("failed to read model: %w", err)
 	}
 
 	plan := &Plan{}
@@ -110,7 +112,7 @@ func (creator *planCreator) createPlan() error {
 func (creator *planCreator) createActionFor(repository ModelRepository) error {
 	clientRepository, err := creator.reader.Get(repository.Type, repository.ID)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read repository %s from client api", repository.ID)
+		return fmt.Errorf("failed to read repository %s from client api: %w", repository.ID, err)
 	}
 
 	switch repository.State {
