@@ -78,7 +78,7 @@ def getOnline(Repository repo) {
 const DELETE_REPOSITORY = `def deleteRepository(String name) {
 
   try {
-    repository.repositoryManager.delete(name)
+    repository.@repositoryManager.delete(name)
   }
   catch (Exception e){
     return e
@@ -109,7 +109,7 @@ if (args != "") {
   conf.setAttributes(attributes)
 
   try {
-    repository.repositoryManager.update(conf)
+    repository.@repositoryManager.update(conf)
   }
   catch (Exception e) {
     return e
@@ -119,7 +119,7 @@ if (args != "") {
 }
 
 Repository getRepositoryFromJsonData(RepositoryMap repoMap){
-  return repository.repositoryManager.get(repoMap.properties.get("repositoryName"))
+  return repository.@repositoryManager.get(repoMap.properties.get("repositoryName"))
 }
 
 RepositoryMap convertJsonFileToRepoMap(String jsonData) {
@@ -143,7 +143,7 @@ if (args != "") {
 
 def retrieveRepositoryConfiguration(String repositoryId) {
   def result = new HashMap<String, String>()
-  def repository = repository.repositoryManager.get(repositoryId)
+  def repository = repository.@repositoryManager.get(repositoryId)
   try{
     //add actual configuration of repository
     result.put ("attributes", repository.getConfiguration().getAttributes())
