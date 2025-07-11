@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fixed the repository modify/create/delete scripts. The field "repositoryManager" is not accessible by getter anymore.
+  - It is now private and accessed by @repositoryManager
+- Fixed the createRepository script
+  - In previous versions, when null was returned, it was converted to a string "null"
+  - Now the api returns an empty string on null
+  - The go-code was previously checking for the "null" string
 
 ## [1.1.1] - 2024-09-24
 ### Fixed
