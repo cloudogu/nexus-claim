@@ -102,7 +102,7 @@ func (client *nexus3APIClient) Modify(repository domain.Repository) error {
   if err != nil {
     return fmt.Errorf("failed to execute modifyRepository.groovy with %s: %w", string(enrichedRepository.ID), err)
   }
-  if !(output == "null") {
+  if output != "null" && output != "" {
     return fmt.Errorf("modifyRepository.groovy with repository %s executed but an error occured: %s", enrichedRepository.ID, output)
   }
 
@@ -153,7 +153,7 @@ func (client *nexus3APIClient) Remove(repository domain.Repository) error {
   if err != nil {
     return fmt.Errorf("failed to execute deleteRepository.groovy with %s: %w", string(repository.ID), err)
   }
-  if !(output == "null") {
+  if output != "null" && output != "" {
     return fmt.Errorf("deleteRepository.groovy with repository %s executed but an error occured: %s", repository.ID, output)
   }
 
