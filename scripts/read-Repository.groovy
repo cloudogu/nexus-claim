@@ -9,7 +9,7 @@ if (args != "") {
 
 def retrieveRepositoryConfiguration(String repositoryId) {
   def result = new HashMap<String, String>()
-  def repository = repository.getRepositoryManager().get(repositoryId)
+  def repository = repository.@repositoryManager.get(repositoryId)
   try{
     //add actual configuration of repository
     result.put ("attributes", repository.getConfiguration().getAttributes())
