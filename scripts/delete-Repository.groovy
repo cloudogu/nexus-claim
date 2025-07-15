@@ -1,7 +1,7 @@
 def deleteRepository(String name) {
 
   try {
-    repository.getRepositoryManager().delete(name)
+    repository.@repositoryManager.delete(name)
   }
   catch (Exception e){
     return e
