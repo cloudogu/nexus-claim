@@ -13,7 +13,7 @@ if (args != "") {
   conf.setAttributes(attributes)
 
   try {
-    repository.@repositoryManager.update(conf)
+    repository.repositoryManager.update(conf)
   }
   catch (Exception e) {
     return e
@@ -23,7 +23,7 @@ if (args != "") {
 }
 
 Repository getRepositoryFromJsonData(RepositoryMap repoMap){
-  return repository.@repositoryManager.get(repoMap.properties.get("repositoryName"))
+  return repository.repositoryManager.get(repoMap.properties.get("repositoryName"))
 }
 
 RepositoryMap convertJsonFileToRepoMap(String jsonData) {
