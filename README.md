@@ -55,6 +55,13 @@ Examples can be found in the [nexus 3 resources directory](resources/nexus3/nexu
 
 Examples can be found in the [nexus 2 resources directory](resources/nexus2/nexus-initial-example.hcl)
 
+## Changing groovy scripts
+
+The groovy files in groovy_scripts.go need to be regenerated after changes have been made to the scripts folder.
+```
+go run ./scripts/generate.go ./infrastructure/groovy_scripts ./scripts
+```
+
 ---
 
 ## What is the Cloudogu EcoSystem?

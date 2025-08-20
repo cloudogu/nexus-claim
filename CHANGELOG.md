@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2025-08-20
+### Changed
+- [#16] Update groovy scripts for compatibility with nexus 3.82
+
 ## [1.1.2] - 2025-07-15
 ### Fixed
 - Fixed the repository modify/create/delete scripts. The field "repositoryManager" is not accessible by getter anymore.
