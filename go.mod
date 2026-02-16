@@ -1,6 +1,6 @@
 module github.com/cloudogu/nexus-claim
 
-go 1.26
+go 1.25.7
 
 require (
 	github.com/cloudogu/nexus-scripting v0.2.0

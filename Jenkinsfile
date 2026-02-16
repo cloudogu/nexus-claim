@@ -3,7 +3,7 @@
 @Library('github.com/cloudogu/ces-build-lib@2.4.0')
 import com.cloudogu.ces.cesbuildlib.*
 
-goVersion = "1.26"
+goVersion = "1.25.7"
 
 // Configuration of branches
 productionReleaseBranch = "master"

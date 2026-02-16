@@ -58,6 +58,7 @@ APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
 # tools
 LINT=gometalinter
+LINT_VERSION=v2.9.0
 
 # flags
 LINTFLAGS=--vendor --exclude="vendor" --exclude="_test.go"
