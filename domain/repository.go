@@ -83,7 +83,7 @@ func (repository Repository) Clone() Repository {
 func (repository Repository) GetRecipeName() (string, error) {
 	recipeName := repository.Properties[repositoryRecipeNameKey]
 	if recipeName == nil {
-		return "", fmt.Errorf("could not find property 'recipeName' in repository " + string(repository.ID))
+		return "", fmt.Errorf("could not find property 'recipeName' in repository %s", repository.ID)
 	}
 
 	return recipeName.(string), nil

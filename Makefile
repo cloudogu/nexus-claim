@@ -1,4 +1,4 @@
-MAKEFILES_VERSION=9.2.1
+MAKEFILES_VERSION=10.6.0
 #
 # useful targets:
 #
@@ -58,6 +58,7 @@ APT_API_BASE_URL=https://apt-api.cloudogu.com/api
 
 # tools
 LINT=gometalinter
+LINT_VERSION=v2.9.0
 
 # flags
 LINTFLAGS=--vendor --exclude="vendor" --exclude="_test.go"
@@ -69,6 +70,7 @@ include build/make/variables.mk
 include build/make/self-update.mk
 include build/make/clean.mk
 include build/make/dependencies-gomod.mk
+include build/make/test-common.mk
 include build/make/test-unit.mk
 include build/make/static-analysis.mk
 
