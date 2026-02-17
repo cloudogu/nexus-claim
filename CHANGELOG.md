@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-02-17
+### Changed
+- [#18] Build with go 1.25.7
+### Security
+- [#18] CVE fixed: [cve-2025-68121](https://avd.aquasec.com/nvd/2025/cve-2025-68121/)
+
 ## [1.1.3] - 2025-08-20
 ### Changed
 - [#16] Update groovy scripts for compatibility with nexus 3.82
